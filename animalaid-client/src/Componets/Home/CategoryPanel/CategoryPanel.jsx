@@ -1,7 +1,7 @@
 import React from 'react';
-import { ChevronRight, ChevronLeft, Pill, Leaf, UserPlus, ShoppingBag } from "lucide-react";
-import { Link } from "react-router-dom";
-// import { useState } from 'react';
+import { NavLink } from "react-router-dom";
+import { Pill, UserPlus, ShoppingBag } from "lucide-react";
+
 const CategoryPanel = () => {
     return (
         <div className="w-full">
@@ -26,11 +26,13 @@ const CategoryPanel = () => {
                     icon={<UserPlus className="w-5 h-5" />}
                     text="Consultation"
                 />
-                {/* <CategoryLink
+                {/* 
+                <CategoryLink
                     to="/farm-equipment"
                     icon={<Leaf className="w-5 h-5" />}
                     text="Farm Equipment"
-                /> */}
+                /> 
+                */}
             </div>
 
             {/* Special Offers */}
@@ -53,16 +55,19 @@ const CategoryPanel = () => {
     );
 };
 
-// Category Link Component
+// Category Link Component using NavLink with active styles
 const CategoryLink = ({ to, icon, text }) => {
     return (
-        <Link
+        <NavLink
             to={to}
-            className="flex items-center gap-3 p-3 border-b border-gray-100 hover:bg-blue-50 transition-colors"
+            className={({ isActive }) =>
+                `flex items-center gap-3 p-3 border-b border-gray-100 transition-colors ${isActive ? 'bg-blue-100 text-blue-800 font-semibold' : 'hover:bg-blue-50 text-gray-700'
+                }`
+            }
         >
             <span className="text-gray-500">{icon}</span>
-            <span className="text-sm text-gray-700">{text}</span>
-        </Link>
+            <span className="text-sm">{text}</span>
+        </NavLink>
     );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { data, Link } from "react-router-dom";
 import { ChevronRight, ChevronLeft, Pill, Leaf, UserPlus, ShoppingBag } from "lucide-react";
 import poultry from '../../Images/Poultry.jpg';
 import fish from '../../Images/Fish.jpg';
@@ -9,6 +9,10 @@ import medicin from '../../Images/medicin.jpeg';
 import equepment from '../../Images/equiepment.webp';
 import consultant from '../../Images/consultant.webp';
 import feed from '../../Images/feed.jpg';
+import { use } from "react";
+
+
+
 
 // Mock data for carousel
 const carouselData = [
@@ -68,15 +72,26 @@ const productCategories = [
 
 const HomePage = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [items, setItems] = useState([]);
 
-    // Auto carousel effect
     useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev === carouselData.length - 1 ? 0 : prev + 1));
-        }, 5000);
+        // Fetch data from the Django backend
+        const fetchItems = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/animals/');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch items');
+                }
+                const data = await response.json();
+                setItems(data); // Set the data into state
+            } catch (error) {
+                console.error('Error fetching items:', error);
+            }
+        };
 
-        return () => clearInterval(interval);
+        fetchItems();
     }, []);
+    // console.log(items);
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev === carouselData.length - 1 ? 0 : prev + 1));
@@ -163,12 +178,6 @@ const HomePage = () => {
                     color="bg-blue-100"
                     icon={<UserPlus className="w-6 h-6 text-blue-500" />}
                 />
-                {/* <FeaturedCategory
-                                title="equipment"
-                                image={ equepment}
-                                color="bg-green-100"
-                                icon={<Leaf className="w-6 h-6 text-green-500" />}
-                            /> */}
             </div>
 
             {/* Products by Category */}
@@ -188,6 +197,14 @@ const HomePage = () => {
                     </div>
                 </div>
             ))}
+            <div>
+                <h2><span className="text-2xl font-bold text-gray-800">All Products: {items.length}</span> {items.map(item => (
+                    <p key={item.id}><div className=" font-bold text-green-500">
+                        {item.name}
+                    </div></p>
+                ))}
+                </h2>
+            </div>
         </div>
     );
 };
