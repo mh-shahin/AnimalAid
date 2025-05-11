@@ -11,6 +11,12 @@ import Consultants from "../Componets/Pages/ConsultantPage/Consultants";
 import Equiepments from "../Componets/Pages/FarmEquiepmetPage/Equiepments";
 import CategoryProductsPage from "../Componets/Pages/MedicinPage/CategoryProductsPage";
 import FeedCategoryProductsPage from "../Componets/Pages/FeedPage/FeedCategoryProductsPage";
+import MedicineAdmin from "../Componets/Admin/MedicineAdmin";
+import FeedAdmin from "../Componets/Admin/FeedAdmin";
+import ConsultationAdmin from "../Componets/Admin/ConsultationAdmin";
+import BlogsAdmin from "../Componets/Admin/BlogsAdmin";
+import AdminLayout from "../Componets/Layouts/AdminLayouts";
+import DashboardAdmin from "../Componets/Admin/DashboardAdmin";
 
 export const router = createBrowserRouter([
     {
@@ -56,4 +62,30 @@ export const router = createBrowserRouter([
         path: "/signup",
         element: <Signup></Signup>
     },
+    {
+        path: "/admin",
+        element: <AdminLayout></AdminLayout>,
+        children: [
+            {
+                path: "adminmedicine",
+                element: <MedicineAdmin></MedicineAdmin>
+            },
+            {
+                path: "adminfeed",
+                element: <FeedAdmin></FeedAdmin>
+            },
+            {
+                path: "adminconsultation",
+                element: <ConsultationAdmin></ConsultationAdmin>
+            },
+            {
+                path: "adminblog",
+                element: <BlogsAdmin></BlogsAdmin>
+            },
+            {
+                path: "admindashboard",
+                element: <DashboardAdmin></DashboardAdmin>
+            }
+        ]
+    }
 ]);
