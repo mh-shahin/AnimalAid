@@ -13,11 +13,11 @@ class GetItemsView(APIView):
         return Response(items, status=status.HTTP_200_OK)
     
 from rest_framework.decorators import api_view
-from .models import animalaid_db
+from .models import api_test
 from .serializers import AnimalAidSerializer
 
 @api_view(['GET'])
 def get_animals(request):
-    animals = animalaid_db.objects.all()
+    animals = api_test.objects.all()
     serializer = AnimalAidSerializer(animals, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)

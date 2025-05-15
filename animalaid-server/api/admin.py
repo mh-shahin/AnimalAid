@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import animalaid_db
+from .models import api_test
 
-admin.site.register(animalaid_db)
+admin.site.register(api_test)

@@ -1,11 +1,13 @@
-import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const App = () => {
-  return (
-    <div>
-      <h1>this is animalaid web application</h1>
-    </div>
-  );
-};
+function App() {
+    return (
+        <>
+            <YourRoutes />
+            <ToastContainer position="top-right" autoClose={3000} />
+        </>
+    );
+}
 
 export default App;

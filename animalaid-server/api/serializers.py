@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import animalaid_db
+from .models import api_test
 
 class AnimalAidSerializer(serializers.ModelSerializer):
     class Meta:
-        model = animalaid_db
+        model = api_test
         fields = '__all__'
