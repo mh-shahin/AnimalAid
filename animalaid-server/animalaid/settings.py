@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',  # Add this line for CORS headers
     'api',
     'medicines',
+    'feeds',
 ]
 
 # media url

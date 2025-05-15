@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Medicine
+from .models import Feed
 
-class MedicineSerializer(serializers.ModelSerializer):
+class FeedSerializer(serializers.ModelSerializer):
     # image = serializers.SerializerMethodField()
 
     class Meta:
-        model = Medicine
-        fields = ['id', 'name', 'brand', 'quantity', 'unit', 'category', 'price', 'discount', 'description', 'image']
+        model = Feed
+        fields = ['id', 'name', 'brand', 'quantity', 'unit', 'animal_category', 'price', 'discount','feed_type', 'description', 'image']
 
     def get_image(self, obj):
         request = self.context.get('request')

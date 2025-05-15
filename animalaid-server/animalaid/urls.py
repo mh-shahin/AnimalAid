@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),  # Include URLs from the api app
     path('medicines/', include('medicines.urls')),  # include medicines app
+    path('feeds/', include('feeds.urls')),  # include feeds app
 ]
 
 
