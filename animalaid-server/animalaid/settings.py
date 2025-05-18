@@ -40,7 +40,15 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',  # Add this line for CORS headers
     'api',
+    'medicines',
+    'feeds',
 ]
+
+# media url
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Add this line for CORS headers

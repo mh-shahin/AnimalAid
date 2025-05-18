@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, Plus, X, Info, Check } from 'lucide-react';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 const MedicineAdmin = () => {
+
     const [formData, setFormData] = useState({
-        medicineName: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null
+        name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null
     });
+
     const [medicines, setMedicines] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,17 +18,23 @@ const MedicineAdmin = () => {
     const unitOptions = ['mg', 'g', 'kg', 'ml', 'L', 'tablet', 'capsule', 'patch'];
     const categoryOptions = ['Antibiotic', 'Analgesic', 'Antiviral', 'Antifungal', 'Nutritional Supplement', 'Vitamin', 'Antihistamine', 'Antiseptic'];
 
+
     useEffect(() => {
-        const mockMedicines = [
-            { id: 1, medicineName: 'Paracetamol', quantity: '500', unit: 'mg', category: 'Analgesic', price: '5.99', offer: '10', brand: 'HealthCare', description: 'For fever and pain relief', imageUrl: '/api/placeholder/100/100' },
-            { id: 2, medicineName: 'Vitamin C', quantity: '1000', unit: 'mg', category: 'Nutritional Supplement', price: '8.99', offer: '15', brand: 'NutraLife', description: 'Supports immune system', imageUrl: '/api/placeholder/100/100' },
-            { id: 3, medicineName: 'Amoxicillin', quantity: '250', unit: 'mg', category: 'Antibiotic', price: '12.49', offer: '0', brand: 'PetMed', description: 'Broad spectrum antibiotic for bacterial infections', imageUrl: '/api/placeholder/100/100' },
-            { id: 4, medicineName: 'Heartworm Plus', quantity: '1', unit: 'tablet', category: 'Antiparasitic', price: '18.99', offer: '5', brand: 'VetCare', description: 'Monthly heartworm prevention medicine', imageUrl: '/api/placeholder/100/100' },
-            { id: 5, medicineName: 'Joint Supplement', quantity: '500', unit: 'g', category: 'Nutritional Supplement', price: '24.99', offer: '20', brand: 'PetHealth', description: 'Joint support with glucosamine and chondroitin for dogs', imageUrl: '/api/placeholder/100/100' },
-            { id: 6, medicineName: 'Eye Drops', quantity: '10', unit: 'ml', category: 'Ophthalmic', price: '9.99', offer: '0', brand: 'ClearVision', description: 'For treating mild eye irritations', imageUrl: '/api/placeholder/100/100' }
-        ];
-        setMedicines(mockMedicines);
+        const fetchMedicines = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/medicines/');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch medicines');
+                }
+                const data = await response.json();
+                setMedicines(data);
+            } catch (error) {
+                console.error('Error fetching medicines:', error);
+            }
+        };
+        fetchMedicines();
     }, []);
+
 
     const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -39,28 +49,82 @@ const MedicineAdmin = () => {
         setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (editingId) {
-            setMedicines(medicines.map(m => m.id === editingId ? { ...m, ...formData, imageUrl: '/api/placeholder/100/100' } : m));
-            showNotification(`Medicine "${formData.medicineName}" successfully updated!`);
-            setEditingId(null);
-        } else {
-            setMedicines([...medicines, { ...formData, id: Date.now(), imageUrl: '/api/placeholder/100/100' }]);
-            showNotification(`Medicine "${formData.medicineName}" successfully added!`);
+
+        const form = new FormData();
+        form.append('name', formData.name);
+        form.append('brand', formData.brand);
+        form.append('quantity', formData.quantity);
+        form.append('unit', formData.unit);
+        form.append('category', formData.category);
+        form.append('price', formData.price);
+        form.append('discount', formData.offer || 0);
+        form.append('description', formData.description);
+        if (formData.image) {
+            form.append('image', formData.image);
         }
-        setFormData({ medicineName: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null });
-        setIsFormVisible(false);
+
+        if (editingId) {
+            form.append('id', editingId);
+        }
+
+        try {
+            const response = await fetch('http://localhost:8000/medicines/', {
+                method: editingId ? 'PUT' : 'POST',
+                body: form,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Backend validation error:', data);
+                throw new Error('Failed to add/update medicine');
+            }
+
+            if (editingId) {
+                setMedicines(medicines.map((m) => (m.id === editingId ? data : m)));
+            } else {
+                setMedicines([...medicines, data]);
+            }
+
+            // ✅ SweetAlert2 success notification
+            Swal.fire({
+                title: editingId ? 'Medicine Updated!' : 'Medicine Added!',
+                text: `Medicine "${formData.name}" has been ${editingId ? 'updated' : 'added'} successfully.`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+
+            setFormData({
+                name: '',
+                quantity: '',
+                unit: '',
+                category: '',
+                price: '',
+                offer: '',
+                brand: '',
+                description: '',
+                image: null
+            });
+            setEditingId(null);
+            setIsFormVisible(false);
+        } catch (error) {
+            console.error('Error submitting medicine:', error);
+            toast.error('❌ Failed to save medicine. Please try again.');
+        }
     };
+
+
 
     const handleEdit = (m) => {
         setFormData({
-            medicineName: m.medicineName,
+            name: m.name,
             quantity: m.quantity,
             unit: m.unit,
             category: m.category,
             price: m.price,
-            offer: m.offer,
+            offer: m.discount,
             brand: m.brand,
             description: m.description,
             image: null
@@ -70,18 +134,36 @@ const MedicineAdmin = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleDelete = (id, name) => {
+
+    const handleDelete = async (id, name) => {
         if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
-            setMedicines(medicines.filter(m => m.id !== id));
-            showNotification(`Medicine "${name}" successfully deleted!`, 'error');
+            try {
+                const response = await fetch(`http://localhost:8000/medicines/?id=${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok && response.status !== 204) {
+                    throw new Error('Delete failed');
+                }
+
+                setMedicines(prev => prev.filter(m => m.id !== id));
+                toast.success(`✅ "${name}" deleted successfully.`);
+            } catch (error) {
+                console.error('Error deleting medicine:', error);
+                toast.error(`❌ Failed to delete "${name}". Please try again.`);
+            }
         }
     };
 
-    const filteredMedicines = medicines.filter(m =>
-        m.medicineName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // ✅ Filter based on search input
+    const filteredMedicines = Array.isArray(medicines)
+        ? medicines.filter((med) =>
+            med.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            med.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            med.category?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        : [];
+
 
     return (
         <div className="min-h-screen p-3 md:p-6 bg-gray-50">
@@ -98,7 +180,7 @@ const MedicineAdmin = () => {
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0">Medicine Administration</h1>
                     <button
                         onClick={() => {
-                            setFormData({ medicineName: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null });
+                            setFormData({ name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null });
                             setEditingId(null);
                             setIsFormVisible(!isFormVisible);
                         }}
@@ -120,9 +202,9 @@ const MedicineAdmin = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Medicine Name*</label>
                                 <input
                                     type="text"
-                                    name="medicineName"
+                                    name="name"
                                     placeholder="Enter medicine name"
-                                    value={formData.medicineName}
+                                    value={formData.name}
                                     onChange={handleInputChange}
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -221,17 +303,33 @@ const MedicineAdmin = () => {
                                 />
                             </div>
 
-                            <div className="form-group col-span-1 md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                                <input
-                                    type="file"
-                                    name="image"
-                                    onChange={handleImageChange}
-                                    accept="image/*"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Recommended size: 300x300px. Max size: 2MB.</p>
+                            <div className="space-y-2 col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Image</label>
+                                <div className="flex items-center justify-between w-full px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-lg shadow-sm hover:border-indigo-400 transition duration-300">
+                                    <label htmlFor="imageUpload" className="cursor-pointer text-indigo-600 hover:underline text-sm font-medium">
+                                        Choose a file
+                                    </label>
+                                    <input
+                                        id="imageUpload"
+                                        type="file"
+                                        name="image"
+                                        onChange={handleImageChange}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+                                    <span className="text-sm text-gray-500">JPG, PNG, JPEG</span>
+                                </div>
+
+                                {formData.image && (
+                                    <p className="text-xs text-green-600 mt-1">✅ {formData.image.name} selected</p>
+                                )}
+
+                                <p className="text-xs text-gray-500 mt-2">
+                                    📐 Recommended: 300x300px &nbsp; 📦 Max size: 2MB
+                                </p>
                             </div>
+
+
                         </div>
 
                         <div className="mt-6 flex justify-end">
@@ -266,49 +364,84 @@ const MedicineAdmin = () => {
                 </div>
 
                 {filteredMedicines.length === 0 ? (
-                    <div className="text-center py-8">
-                        <p className="text-gray-500 text-lg">No medicines found matching your search.</p>
+                    <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl border border-gray-200 shadow-sm max-w-md mx-auto my-8">
+                        <div className="text-gray-300 mb-4">
+                            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-medium text-gray-800 mb-2">No medicines found</h3>
+                        <p className="text-gray-500 text-base text-center">Try adjusting your search criteria</p>
                     </div>
                 ) : (
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
                         {filteredMedicines.map((medicine) => (
-                            <div key={medicine.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                                <div className="relative pb-[70%] bg-gray-100">
+                            <div key={medicine.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+                                <div className="relative h-60 md:h-64 bg-gray-50">
                                     <img
-                                        src={medicine.imageUrl}
-                                        alt={medicine.medicineName}
-                                        className="absolute w-full h-full object-cover"
+                                        src={medicine.image}
+                                        alt={medicine.name}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
                                     />
+                                    <div className="absolute top-3 right-3 bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm">
+                                        {medicine.category}
+                                    </div>
                                 </div>
-                                <div className="p-4">
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="text-lg font-semibold text-gray-800">{medicine.medicineName}</h3>
-                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{medicine.category}</span>
+
+                                <div className="p-5 flex flex-col flex-grow">
+                                    <div className="flex justify-between items-start gap-3 mb-3">
+                                        <h3 className="text-lg font-semibold text-gray-900 leading-tight">
+                                            {medicine.name}
+                                        </h3>
+                                        <span className="bg-gray-100 text-gray-700 text-sm px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                                            {medicine.quantity} {medicine.unit}
+                                        </span>
                                     </div>
-                                    <p className="text-sm text-gray-600 mt-1">{medicine.brand}</p>
-                                    <div className="mt-2 flex items-center">
-                                        <span className="text-lg font-bold text-indigo-600">${medicine.price}</span>
-                                        {medicine.offer !== '0' && medicine.offer !== '' && (
-                                            <span className="ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded">{medicine.offer}% off</span>
-                                        )}
+
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                                            {medicine.brand}
+                                        </span>
                                     </div>
-                                    <p className="text-sm text-gray-500 mt-1">{medicine.quantity} {medicine.unit}</p>
-                                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">{medicine.description}</p>
-                                    <div className="flex justify-end mt-3 pt-3 border-t border-gray-100 gap-2">
-                                        <button
-                                            onClick={() => handleEdit(medicine)}
-                                            className="p-1.5 rounded-full text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
-                                            title="Edit medicine"
-                                        >
-                                            <Edit size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(medicine.id, medicine.medicineName)}
-                                            className="p-1.5 rounded-full text-gray-600 hover:bg-gray-100 hover:text-red-600 transition-colors"
-                                            title="Delete medicine"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+
+                                    <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow">
+                                        {medicine.description}
+                                    </p>
+
+                                    <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
+                                        <div>
+                                            <p className="text-xl font-bold text-indigo-600">${medicine.price}</p>
+                                            {medicine.discount && (
+                                                <p className="text-sm font-medium text-green-600">
+                                                    Save {medicine.discount}% off
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handleEdit(medicine)}
+                                                className="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors duration-200"
+                                                aria-label="Edit medicine"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(medicine.id, medicine.name)}
+                                                className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-200"
+                                                aria-label="Delete medicine"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
