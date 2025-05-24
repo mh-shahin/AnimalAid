@@ -67,6 +67,11 @@ export const router = createBrowserRouter([
         element: <AdminLayout></AdminLayout>,
         children: [
             {
+                // path: "admindashboard",
+                index: true,
+                element: <DashboardAdmin></DashboardAdmin>
+            },
+            {
                 path: "adminmedicine",
                 element: <MedicineAdmin></MedicineAdmin>
             },
@@ -86,6 +91,7 @@ export const router = createBrowserRouter([
                 path: "admindashboard",
                 element: <DashboardAdmin></DashboardAdmin>
             }
+
         ]
     }
 ]);

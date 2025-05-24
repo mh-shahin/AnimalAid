@@ -1,0 +1,6 @@
+Django>=3.2
+djangorestframework
+Pillow
+torch         # Required for PyTorch models
+torchvision   # Required for PyTorch models
+transformers  # If using Hugging Face models

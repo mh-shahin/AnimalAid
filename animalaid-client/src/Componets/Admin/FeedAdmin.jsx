@@ -245,7 +245,7 @@ const FeedAdmin = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-gray-700">Animal</label>
+                                    <label className="block text-sm font-medium text-gray-700">Animal Category</label>
                                     <select
                                         name="animal_category"
                                         value={formData.animal_category}
@@ -259,7 +259,7 @@ const FeedAdmin = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-gray-700">Price ($)</label>
+                                    <label className="block text-sm font-medium text-gray-700">Price <span className="font-extrabold">(৳)</span>*</label>
                                     <input
                                         type="number"
                                         step="0.01"
@@ -422,7 +422,7 @@ const FeedAdmin = () => {
 
                                     <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
                                         <div>
-                                            <p className="text-xl font-bold text-indigo-600">${feed.price}</p>
+                                            <p className="text-xl font-bold text-indigo-600"><span className="text-xl font-extrabold">৳</span>{feed.price}</p>
                                             {feed.discount && (
                                                 <p className="text-sm font-medium text-green-600">
                                                     Save {feed.discount}% off

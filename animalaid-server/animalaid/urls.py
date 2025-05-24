@@ -24,8 +24,8 @@ urlpatterns = [
     path('api/', include('api.urls')),  # Include URLs from the api app
     path('medicines/', include('medicines.urls')),  # include medicines app
     path('feeds/', include('feeds.urls')),  # include feeds app
+    path('consultations/', include('consultations.urls')),  # include consultations app
 ]
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 const MedicineAdmin = () => {
 
     const [formData, setFormData] = useState({
-        name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null
+        name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', generic_name: '', image: null
     });
 
     const [medicines, setMedicines] = useState([]);
@@ -17,6 +17,8 @@ const MedicineAdmin = () => {
 
     const unitOptions = ['mg', 'g', 'kg', 'ml', 'L', 'tablet', 'capsule', 'patch'];
     const categoryOptions = ['Antibiotic', 'Analgesic', 'Antiviral', 'Antifungal', 'Nutritional Supplement', 'Vitamin', 'Antihistamine', 'Antiseptic'];
+    const genericNameOptions = ["Amoxicillin","Enrofloxacin","Ivermectin","Vitamin B Complex","Tylosin","Doxycycline","Albendazole","Paracetamol","Ciprofloxacin"];
+
 
 
     useEffect(() => {
@@ -60,6 +62,7 @@ const MedicineAdmin = () => {
         form.append('category', formData.category);
         form.append('price', formData.price);
         form.append('discount', formData.offer || 0);
+        form.append('generic_name', formData.generic_name);
         form.append('description', formData.description);
         if (formData.image) {
             form.append('image', formData.image);
@@ -103,6 +106,7 @@ const MedicineAdmin = () => {
                 category: '',
                 price: '',
                 offer: '',
+                generic_name: '',
                 brand: '',
                 description: '',
                 image: null
@@ -125,6 +129,7 @@ const MedicineAdmin = () => {
             category: m.category,
             price: m.price,
             offer: m.discount,
+            generic_name: m.generic_name,
             brand: m.brand,
             description: m.description,
             image: null
@@ -252,7 +257,7 @@ const MedicineAdmin = () => {
                             </div>
 
                             <div className="form-group">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category*</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Medicine Category*</label>
                                 <select
                                     name="category"
                                     value={formData.category}
@@ -266,7 +271,7 @@ const MedicineAdmin = () => {
                             </div>
 
                             <div className="form-group">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)*</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Price <span className='font-extrabold'>(৳)</span>*</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -290,6 +295,27 @@ const MedicineAdmin = () => {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                             </div>
+
+                            <div className="form-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                   Medicine Generic Name*
+                                </label>
+                                <select
+                                    name="generic_name"
+                                    value={formData.generic_name}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="">Select Generic Name</option>
+                                    {genericNameOptions.map(generic => (
+                                        <option key={generic} value={generic}>
+                                            {generic}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
 
                             <div className="form-group col-span-1 md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -411,7 +437,7 @@ const MedicineAdmin = () => {
 
                                     <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
                                         <div>
-                                            <p className="text-xl font-bold text-indigo-600">${medicine.price}</p>
+                                            <p className="text-xl font-bold text-indigo-600"><span className="text-xl font-extrabold">৳</span>{medicine.price}</p>
                                             {medicine.discount && (
                                                 <p className="text-sm font-medium text-green-600">
                                                     Save {medicine.discount}% off

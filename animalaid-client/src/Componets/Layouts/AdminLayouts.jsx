@@ -85,7 +85,6 @@ const AdminLayout = () => {
                     toggleProfileMenu={toggleProfileMenu}
                     showProfileMenu={showProfileMenu}
                 />
-
                 {/* Scrollable page content */}
                 <main className="flex-1 overflow-y-auto p-4">
                     <Outlet />

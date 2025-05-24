@@ -6,7 +6,7 @@ class MedicineSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Medicine
-        fields = ['id', 'name', 'brand', 'quantity', 'unit', 'category', 'price', 'discount', 'description', 'image']
+        fields = ['id', 'name', 'brand', 'quantity', 'unit', 'category', 'price', 'discount','generic_name','description', 'image']
 
     def get_image(self, obj):
         request = self.context.get('request')
