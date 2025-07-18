@@ -47,3 +47,14 @@ def medicines_view(request):
             return Response({'message': 'Medicine deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Medicine.DoesNotExist:
             return Response({'error': 'Medicine not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_medicines_by_id(request, pk):
+    try:
+        medicine = Medicine.objects.get(pk=pk)
+    except Medicine.DoesNotExist:
+        return Response({'error': 'Medicine not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = MedicineSerializer(medicine, context={'request': request})
+    return Response(serializer.data)

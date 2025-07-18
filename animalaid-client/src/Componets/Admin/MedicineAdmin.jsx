@@ -17,7 +17,7 @@ const MedicineAdmin = () => {
 
     const unitOptions = ['mg', 'g', 'kg', 'ml', 'L', 'tablet', 'capsule', 'patch'];
     const categoryOptions = ['Antibiotic', 'Analgesic', 'Antiviral', 'Antifungal', 'Nutritional Supplement', 'Vitamin', 'Antihistamine', 'Antiseptic'];
-    const genericNameOptions = ["Amoxicillin","Enrofloxacin","Ivermectin","Vitamin B Complex","Tylosin","Doxycycline","Albendazole","Paracetamol","Ciprofloxacin"];
+    const genericNameOptions = ["Amoxicillin","Enrofloxacin","Ivermectin","Vitamin B Complex","Tylosin","Doxycycline","Albendazole","Paracetamol","Ciprofloxacin","Oxytetracycline Dihydrate"];
 
 
 
@@ -431,7 +431,7 @@ const MedicineAdmin = () => {
                                         </span>
                                     </div>
 
-                                    <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow">
+                                    <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow line-clamp-1">
                                         {medicine.description}
                                     </p>
 

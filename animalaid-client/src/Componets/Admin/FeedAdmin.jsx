@@ -416,7 +416,7 @@ const FeedAdmin = () => {
                                         </span>
                                     </div>
 
-                                    <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow">
+                                    <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow line-clamp-1">
                                         {feed.description}
                                     </p>
 

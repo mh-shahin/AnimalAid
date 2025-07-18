@@ -50,3 +50,14 @@ def feeds_view(request):
             return Response({'message': 'Feed deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Feed.DoesNotExist:
             return Response({'error': 'Feed not found'}, status=status.HTTP_404_NOT_FOUND)
+  
+        
+@api_view(['GET'])
+def get_feeds_by_id(request, pk):
+    try:
+        feed = Feed.objects.get(pk=pk)
+    except Feed.DoesNotExist:
+        return Response({'error': 'Feed not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = FeedSerializer(feed, context={'request': request})
+    return Response(serializer.data)

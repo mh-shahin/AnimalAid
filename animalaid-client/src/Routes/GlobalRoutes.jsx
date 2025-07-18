@@ -17,6 +17,8 @@ import ConsultationAdmin from "../Componets/Admin/ConsultationAdmin";
 import BlogsAdmin from "../Componets/Admin/BlogsAdmin";
 import AdminLayout from "../Componets/Layouts/AdminLayouts";
 import DashboardAdmin from "../Componets/Admin/DashboardAdmin";
+import MedicineDetailsPage from "../Componets/Pages/DetailsPages/MedicineDetailsPages/MedicineDetailsPage";
+import FeedDetailsPage from "../Componets/Pages/DetailsPages/FeedDetailsPages/FeedDetailsPage";
 
 export const router = createBrowserRouter([
     {
@@ -30,6 +32,10 @@ export const router = createBrowserRouter([
             {
                 path: "/medicin",
                 element: <Medicin></Medicin>
+            },
+            {
+                path: "/medicin/:id",
+                element: <MedicineDetailsPage></MedicineDetailsPage>
             },
             {
                 path: "medicin/category/:categoryName",
@@ -46,6 +52,10 @@ export const router = createBrowserRouter([
             {
                 path: "/feed",
                 element: <Feed></Feed>
+            },
+            {
+                path: "/feed/:id",
+                element: <FeedDetailsPage></FeedDetailsPage>
             },
             {
                 path: "/feed/category/:categoryName",
