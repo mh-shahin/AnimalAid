@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'medicines',
     'feeds',
     'consultations',
+    'reviews', 
 ]
 
 # media url

@@ -1,29 +1,3 @@
-// import { Outlet } from 'react-router-dom';
-// import Navbar from '../Shared/Navbar/Navbar';
-// import Footer from '../Shared/Footer/Footer';
-// import CategoryPanel from '../Home/CategoryPanel/CategoryPanel';
-
-// const Main = () => {
-//     return (
-//         <div className="min-h-screen flex flex-col">
-//             <Navbar />
-//             <div className="flex flex-grow lg:flex-row">
-//                 <div className="hidden lg:block w-1/4 bg-gray-100 overflow-y-auto h-[calc(100vh-theme(spacing.header)-theme(spacing.footer))]">
-//                     <div className="p-4 sticky top-0">
-//                         <CategoryPanel />
-//                     </div>
-//                 </div>
-//                 <main className="flex-grow overflow-y-auto h-[calc(100vh-theme(spacing.header)-theme(spacing.footer))]">
-//                     <Outlet />
-//                 </main>
-//             </div>
-//             <Footer />
-//         </div>
-//     );
-// };
-
-// export default Main;
-
 
 import { Outlet } from 'react-router-dom';
 import Navbar from '../Shared/Navbar/Navbar';

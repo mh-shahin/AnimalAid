@@ -179,7 +179,7 @@ const HomePage = () => {
             <div className="max-w-7xl mx-auto px-4 mt-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FeaturedCategory
-                        title="Medicine"
+                        title="Medicin"
                         image={medicin}
                         color="bg-red-100"
                         icon={<Pill className="w-6 h-6 text-red-500" />}

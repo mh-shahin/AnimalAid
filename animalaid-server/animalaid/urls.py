@@ -9,6 +9,7 @@ urlpatterns = [
     path('medicines/', include('medicines.urls')),  # include medicines app
     path('feeds/', include('feeds.urls')),  # include feeds app
     path('consultations/', include('consultations.urls')),  # include consultations app
+    path('reviews/', include('reviews.urls')),  # include reviews app
 ]
 
 if settings.DEBUG:

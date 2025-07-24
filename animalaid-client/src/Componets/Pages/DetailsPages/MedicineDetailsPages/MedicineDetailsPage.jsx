@@ -37,28 +37,40 @@ const MedicineDetailsPage = () => {
 
     // console.log("medicine 85:", medicine)
 
-    const handleSubmitReview = (e) => {
+    // ✅ Fetch reviews on load
+    useEffect(() => {
+        fetch(`http://localhost:8000/reviews/medicines/${id}/`)
+            .then((res) => res.json())
+            .then((data) => setReviews(data))
+            .catch((err) => console.error('Error fetching reviews:', err));
+    }, [id]);
+
+    // ✅ Submit a review
+    const handleSubmitReview = async (e) => {
         e.preventDefault();
-        if (rating === 0) {
-            alert('Please select a rating');
-            return;
+        try {
+            const res = await fetch(`http://localhost:8000/reviews/medicines/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    rating: rating,
+                    text: review,
+                }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setReviews([data, ...reviews]); // Add new review to top
+                setRating(0);
+                setReview('');
+            } else {
+                console.error('Failed to submit review');
+            }
+        } catch (error) {
+            console.error('Error:', error);
         }
-
-        const newReview = {
-            id: Date.now(),
-            rating,
-            text: review,
-            date: new Date().toISOString().split('T')[0],
-            user: 'Current User' // In a real app, you'd use actual user data
-        };
-
-        setReviews([...reviews, newReview]);
-        setRating(0);
-        setReview('');
-        setHoverRating(0);
-
-        // In a real app, you would send this to your API
-        // console.log('Review submitted:', newReview);
     };
 
     if (loading) {
@@ -97,7 +109,7 @@ const MedicineDetailsPage = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col md:flex-row gap-8">
-                <div className="md:w-1/3 bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="md:w-1/3 h-80 bg-white rounded-lg shadow-md overflow-hidden">
                     <img
                         src={medicine.image || '/default-medicine.jpg'}
                         alt={medicine.name}
@@ -154,16 +166,14 @@ const MedicineDetailsPage = () => {
                         <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition duration-300">
                             Add to Cart
                         </button>
-                        <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-2 rounded-md font-medium transition duration-300">
-                            Buy Now
-                        </button>
                     </div>
                 </div>
             </div>
-
+            {/* REVIEWS SECTION */}
             <div className="mt-12">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
 
+                {/* REVIEW FORM */}
                 <div className="bg-white p-6 rounded-lg shadow-md mb-8">
                     <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
                     <form onSubmit={handleSubmitReview}>
@@ -187,7 +197,9 @@ const MedicineDetailsPage = () => {
                             </div>
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="review" className="block text-gray-700 mb-2">Your Review</label>
+                            <label htmlFor="review" className="block text-gray-700 mb-2">
+                                Your Review
+                            </label>
                             <textarea
                                 id="review"
                                 rows="4"
@@ -206,6 +218,7 @@ const MedicineDetailsPage = () => {
                     </form>
                 </div>
 
+                {/* REVIEW LIST */}
                 <div className="space-y-6">
                     {reviews.length === 0 ? (
                         <p className="text-gray-500">No reviews yet. Be the first to review!</p>
@@ -214,7 +227,7 @@ const MedicineDetailsPage = () => {
                             <div key={review.id} className="bg-white p-6 rounded-lg shadow-sm">
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
-                                        <h4 className="font-semibold text-gray-900">{review.user}</h4>
+                                        <h4 className="font-semibold text-gray-900">{review.user || 'Anonymous'}</h4>
                                         <div className="flex items-center">
                                             <div className="flex mr-2">
                                                 {[1, 2, 3, 4, 5].map((star) => (
@@ -224,7 +237,9 @@ const MedicineDetailsPage = () => {
                                                     />
                                                 ))}
                                             </div>
-                                            <span className="text-sm text-gray-500">{review.date}</span>
+                                            <span className="text-sm text-gray-500">
+                                                {new Date(review.created_at).toLocaleDateString()}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

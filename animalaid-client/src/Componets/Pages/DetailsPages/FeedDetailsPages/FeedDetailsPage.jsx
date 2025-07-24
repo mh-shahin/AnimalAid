@@ -35,30 +35,41 @@ const FeedDetailsPage = () => {
         fetchFeedDetails();
     }, [id]);
 
-    console.log("Feed 85:", feeds)
+    // console.log("Feed 85:", feeds)
 
-    const handleSubmitReview = (e) => {
+    // ✅ Fetch reviews on load
+    useEffect(() => {
+        fetch(`http://localhost:8000/reviews/feeds/${id}/`)
+            .then((res) => res.json())
+            .then((data) => setReviews(data))
+            .catch((err) => console.error('Error fetching reviews:', err));
+    }, [id]);
+
+    const handleSubmitReview = async (e) => {
         e.preventDefault();
-        if (rating === 0) {
-            alert('Please select a rating');
-            return;
+        try {
+            const res = await fetch(`http://localhost:8000/reviews/feeds/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    rating: rating,
+                    text: review,
+                }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setReviews([data, ...reviews]); // Add new review to top
+                setRating(0);
+                setReview('');
+            } else {
+                console.error('Failed to submit review');
+            }
+        } catch (error) {
+            console.error('Error:', error);
         }
-
-        const newReview = {
-            id: Date.now(),
-            rating,
-            text: review,
-            date: new Date().toISOString().split('T')[0],
-            user: 'Current User' // In a real app, you'd use actual user data
-        };
-
-        setReviews([...reviews, newReview]);
-        setRating(0);
-        setReview('');
-        setHoverRating(0);
-
-        // In a real app, you would send this to your API
-        // console.log('Review submitted:', newReview);
     };
 
     if (loading) {
@@ -97,7 +108,7 @@ const FeedDetailsPage = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col md:flex-row gap-8">
-                <div className="md:w-1/3 bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="md:w-1/3 h-80 bg-white rounded-lg shadow-md overflow-hidden">
                     <img
                         src={feeds.image || '/default-Feed.jpg'}
                         alt={feeds.name}
