@@ -22,6 +22,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-9#1+smtr6l_i-4@^5thp%l6+equ9ops8n1$j0u$z((y$el)n4m'
 
+# from decouple import config
+import os
+
+# OPENAI_API_KEY = config("OPENAI_API_KEY", default=None)
+
+from pathlib import Path
+from dotenv import load_dotenv
+
+# load .env
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+HF_API_TOKEN = os.getenv('HF_API_TOKEN')
+HF_MODEL_ID  = os.getenv('HF_MODEL_ID')
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -42,8 +58,9 @@ INSTALLED_APPS = [
     'api',
     'medicines',
     'feeds',
-    'consultations',
-    'reviews', 
+    # 'consultations',
+    'reviews',
+    'consultant',
 ]
 
 # media url
