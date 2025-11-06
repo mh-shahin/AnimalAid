@@ -12,13 +12,7 @@ const BlogsAdmin = () => {
   const [activeTab, setActiveTab] = useState('posts');
 
   // Form state
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    category: '',
-    featuredImage: null,
-    tags: []
-  });
+  const [formData, setFormData] = useState({title: '', content: '', category: '', image: null, tags: [] });
 
   // Mock data initialization
   useEffect(() => {
@@ -28,7 +22,7 @@ const BlogsAdmin = () => {
         title: 'Understanding Mental Health in the Workplace',
         content: '<p>Mental health is a critical aspect of employee wellbeing...</p>',
         category: 'Workplace Wellness',
-        featuredImage: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773',
+        image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773',
         createdAt: '2023-05-15',
         likes: 42,
         comments: [
@@ -42,7 +36,7 @@ const BlogsAdmin = () => {
         title: '5 Tips for Better Sleep Hygiene',
         content: '<p>Quality sleep is essential for productivity and mental health...</p>',
         category: 'Self Care',
-        featuredImage: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597',
+        image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597',
         createdAt: '2023-06-02',
         likes: 28,
         comments: [
@@ -76,7 +70,7 @@ const BlogsAdmin = () => {
     if (e.target.files && e.target.files[0]) {
       setFormData({
         ...formData,
-        featuredImage: URL.createObjectURL(e.target.files[0])
+        image: URL.createObjectURL(e.target.files[0])
       });
     }
   };
@@ -89,7 +83,7 @@ const BlogsAdmin = () => {
       title: formData.title,
       content: formData.content,
       category: formData.category,
-      featuredImage: formData.featuredImage || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40',
+      image: formData.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40',
       createdAt: new Date().toISOString().split('T')[0],
       likes: 0,
       comments: [],
@@ -107,7 +101,7 @@ const BlogsAdmin = () => {
       title: '',
       content: '',
       category: '',
-      featuredImage: null,
+      image: null,
       tags: []
     });
   };
@@ -145,8 +139,8 @@ const BlogsAdmin = () => {
           <button
             onClick={() => setIsCreatingPost((prev) => !prev)}
             className={`mt-4 md:mt-0 ${isCreatingPost ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'
-              } text-white px-4 py-2 rounded-lg flex items-center gap-2`}
-          >
+              } text-white px-4 py-2 rounded-lg flex items-center gap-2`} >
+          
             <Plus size={18} />
             {isCreatingPost ? 'Cancel' : 'Create New Post'}
           </button>
@@ -243,10 +237,10 @@ const BlogsAdmin = () => {
                     onChange={handleImageChange}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
-                  {formData.featuredImage && (
+                  {formData.image && (
                     <div className="mt-2 w-full h-48 overflow-hidden rounded-md">
                       <img
-                        src={formData.featuredImage}
+                        src={formData.image}
                         alt="Preview"
                         className="w-full h-full object-cover"
                       />
@@ -294,7 +288,7 @@ const BlogsAdmin = () => {
               <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="h-48 overflow-hidden">
                   <img
-                    src={post.featuredImage}
+                    src={post.image}
                     alt={post.title}
                     className="w-full h-full object-cover"
                   />
@@ -424,7 +418,7 @@ const BlogsAdmin = () => {
                 <div className="mb-6">
                   <div className="h-64 overflow-hidden rounded-md mb-4">
                     <img
-                      src={selectedPost.featuredImage}
+                      src={selectedPost.image}
                       alt={selectedPost.title}
                       className="w-full h-full object-cover"
                     />

@@ -15,7 +15,7 @@ const FeedAdmin = () => {
     const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
     const unitOptions = ['kg', 'packet', 'g', 'L', 'ml'];
-    const animal_categoryOptions = ['Poultry', 'Cattle', 'Layer', 'Goat', 'Sheep', 'Cock', 'Duck'];
+    const animal_categoryOptions = ['Poultry', 'Fish', 'Cattle', 'Layer', 'Goat', 'Sheep', 'Cock', 'Duck'];
     const feed_typeOptions = ['Starter', 'Grower', 'Pellet', 'Finisher', 'Mash'];
 
 

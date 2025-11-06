@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart, Bar, LineChart, Line, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell 
-} from 'recharts';
-import { 
-  Users, Package, AlertTriangle, TrendingUp, Layers, 
-  Calendar, ShoppingCart, Activity, Truck, Thermometer,
-  ArrowUp, ArrowDown, Info, ExternalLink, ChevronRight
-} from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell } from 'recharts';
+
+import { Users, Pill, Package, AlertTriangle, TrendingUp, Layers, Calendar, ShoppingCart, Activity, Truck, Thermometer,
+  ArrowUp, ArrowDown, Info, ExternalLink, ChevronRight } from 'lucide-react';
 
 const DashboardAdmin = () => {
   // Demo data - would normally be fetched from API
@@ -20,6 +15,8 @@ const DashboardAdmin = () => {
   });
   
   const [loading, setLoading] = useState(true);
+  const [medicines, setMedicines] = useState([]);
+  const [feeds, setFeeds] = useState([]);
   const [selectedTimeframe, setSelectedTimeframe] = useState('monthly');
 
   useEffect(() => {
@@ -34,6 +31,37 @@ const DashboardAdmin = () => {
       setLoading(false);
     }, 1000);
   }, []);
+
+  useEffect(() => {
+      const fetchMedicines = async () => {
+          try {
+              const response = await fetch('http://localhost:8000/medicines/');
+              if (!response.ok) {
+                  throw new Error('Failed to fetch medicines');
+              }
+              const data = await response.json();
+              setMedicines(data);
+          } catch (error) {
+              console.error('Error fetching medicines:', error);
+          }
+      };
+      fetchMedicines();
+  }, []);
+
+useEffect(() => {
+        const fetchFeeds = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/feeds/');
+                if (!response.ok) throw new Error('Failed to fetch feeds');
+                const data = await response.json();
+                setFeeds(data);
+            } catch (error) {
+                console.error(error);
+                toast.error('Failed to fetch feeds');
+            }
+        };
+        fetchFeeds();
+    }, []);
 
   // Demo data for charts
   const animalDistribution = [
@@ -155,12 +183,12 @@ const DashboardAdmin = () => {
               {loading ? (
                 <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">{stats.totalAnimals.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">{0}</p>
               )}
-              <div className="flex items-center mt-1">
+              {/* <div className="flex items-center mt-1">
                 <ArrowUp className="h-4 w-4 text-green-500" />
                 <span className="text-xs text-green-500 font-medium">+3.2% this month</span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -169,34 +197,34 @@ const DashboardAdmin = () => {
               <Package className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Feed Stock (kg)</p>
+              <p className="text-sm font-medium text-gray-500">Feed Stock (Bag)</p>
               {loading ? (
                 <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">{stats.feedStock.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">{feeds.length} </p>
               )}
-              <div className="flex items-center mt-1">
+              {/* <div className="flex items-center mt-1">
                 <ArrowDown className="h-4 w-4 text-red-500" />
                 <span className="text-xs text-red-500 font-medium">-1.8% this month</span>
-              </div>
+              </div> */}
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6 flex items-center">
             <div className="mr-4 bg-red-100 p-3 rounded-full">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <Pill className="h-6 w-6 text-red-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Active Diseases</p>
+              <p className="text-sm font-medium text-gray-500">Medicines Stock</p>
               {loading ? (
                 <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">{stats.activeDiseases}</p>
+                <p className="text-2xl font-bold text-gray-900">{medicines.length}</p>
               )}
-              <div className="flex items-center mt-1">
+              {/* <div className="flex items-center mt-1">
                 <ArrowUp className="h-4 w-4 text-red-500" />
                 <span className="text-xs text-red-500 font-medium">+2 since last month</span>
-              </div>
+              </div> */}
             </div>
           </div>
 

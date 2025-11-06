@@ -8,7 +8,6 @@ urlpatterns = [
     path('api/', include('api.urls')),  # Include URLs from the api app
     path('medicines/', include('medicines.urls')),  # include medicines app
     path('feeds/', include('feeds.urls')),  # include feeds app
-    # path('consultations/', include('consultations.urls')),  # include consultations app
     path('reviews/', include('reviews.urls')),  # include reviews app
     path('consultant/', include('consultant.urls')),  # include consultant app
 ]

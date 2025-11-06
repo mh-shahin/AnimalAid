@@ -1,4 +1,3 @@
-# consultant/views.py
 import json, traceback
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -22,12 +21,6 @@ def analyze_consultation(request):
     try:
         animal_type = request.data.get('animal_type')
         description = request.data.get('description')
-        
-        # Print text fields
-        print("===== CONSULTATION REQUEST RECEIVED =====")
-        print("animal_type:", animal_type)
-        print("description (first 300 chars):", (description or "")[:300])
-        
 
         # Accept up to 3 images named image1, image2, image3
         images = []
@@ -35,11 +28,6 @@ def analyze_consultation(request):
             f = request.FILES.get(f"image{i}")
             if f is not None:
                 images.append(f)
-
-        
-        print(f"Total images received: {len(images)}")
-        for idx, img in enumerate(images, start=1):
-            print(f"Image {idx}: name={img.name}, size={img.size} bytes, content_type={img.content_type}")
 
         # Validate
         if not animal_type or not description:

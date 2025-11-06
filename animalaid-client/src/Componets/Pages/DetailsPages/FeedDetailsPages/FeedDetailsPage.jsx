@@ -134,7 +134,7 @@ const FeedDetailsPage = () => {
                     </div>
 
                     <div className="text-2xl font-semibold text-blue-600 mb-4">
-                        ${feeds.price}
+                        ৳ {feeds.price}
                     </div>
 
                     <div className="mb-6">

@@ -35,7 +35,7 @@ const MedicineDetailsPage = () => {
         fetchMedicineDetails();
     }, [id]);
 
-    // console.log("medicine 85:", medicine)
+    // console.log("medicine 85:", id)
 
     // ✅ Fetch reviews on load
     useEffect(() => {
@@ -135,7 +135,7 @@ const MedicineDetailsPage = () => {
                     </div>
 
                     <div className="text-2xl font-semibold text-blue-600 mb-4">
-                        ${medicine.price}
+                        ৳ {medicine.price}
                     </div>
 
                     <div className="mb-6">

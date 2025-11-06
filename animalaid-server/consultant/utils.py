@@ -165,24 +165,44 @@ def _mock_analysis(description, animal_type, images):
     if "scratch" in text or "skin" in text or "itch" in text:
         detected = "Dermatitis"
         medicines = [
-            {"name": "Topical Antibacterial Ointment", "dosage": "Apply thin layer twice daily"},
-            {"name": "Anti-itch Spray", "dosage": "Apply as needed (max 4x/day)"}
+            {"name": "Liquamycin LA-200", "id": "12", "dosage": "Apply thin layer twice daily"},
+            {"name": "Dizene Cattle", "id": "15", "dosage": "Apply as needed (max 4x/day)"}
         ]
         treatment = "Clean area with saline, apply topical antibiotic, keep dry and observe."
+        out_medicine = [
+            {"name": "Topical Antibacterial Ointment", "dosage": "Apply thin layer twice daily"},
+        ]
         confidence = 78
     elif "not eat" in text or "loss of appetite" in text or "not eating" in text:
         detected = "Digestive disorder"
         medicines = [
-            {"name": "Probiotic Supplement", "dosage": "1 capsule daily with food"}
+            {"name": "ENRO-100", "id": "9", "dosage": "1 capsule daily with food"},
+            {"name": "Diarovet", "id": "8", "dosage": "2 capsule daily with food"}
         ]
         treatment = "Offer bland diet, ensure hydration, monitor for 24-48 hours."
+        out_medicine = [
+            {"name": "Probiotic", "dosage": "1 capsule daily with food"},
+        ]
         confidence = 72
-    else:
-        detected = "Possible infection or inflammation"
+    elif "fever" in text or "temperature" in text:
+        detected = "Fever"
         medicines = [
-            {"name": "Vet-prescribed antibiotic", "dosage": "Follow vet instructions"}
+            {"name": "Analgin", "id": "14", "dosage": "As needed for fever"}
+        ]
+        treatment = "Monitor temperature, keep hydrated, and consult a vet if persistent."
+        out_medicine = [
+            {"name": "Antipyretic", "dosage": "1 capsule every 8 hours as needed"},
+        ]
+        confidence = 70
+    else:
+        detected = "Virus infection"
+        medicines = [
+            {"name": "Cipro Care", "id": "13", "dosage": "1 ml for 3 kg body weight / 1 ml 3 L water  every 12 hours"},
         ]
         treatment = "Keep area clean; consult a veterinarian for definitive diagnosis."
+        out_medicine = [
+            {"name": "Vet-prescribed antibiotic", "dosage": "Follow vet instructions"}
+        ]
         confidence = 65
 
     return {
@@ -191,6 +211,7 @@ def _mock_analysis(description, animal_type, images):
         "possibleCauses": ["Bacterial infection", "Allergic reaction", "Environmental irritants"],
         "recommendedTreatment": treatment,
         "recommendedMedicines": medicines,
+        "additionalMedicines": out_medicine,
         "veterinaryAdvice": "If condition persists or worsens within 48 hours, consult a veterinarian.",
         "meta": {"images_received": len(images), "description_length": len(description or "")},
         "note": "This is a fallback analysis because HF inference failed or model not configured."
