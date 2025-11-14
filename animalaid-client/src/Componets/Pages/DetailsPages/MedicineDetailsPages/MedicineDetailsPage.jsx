@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { StarIcon } from '@heroicons/react/24/solid';
+import { useCart } from '../../../../Context/CartContext.jsx';
+import { CheckCircle } from 'lucide-react';
 
 const MedicineDetailsPage = () => {
     const { id } = useParams();
@@ -11,6 +13,9 @@ const MedicineDetailsPage = () => {
     const [hoverRating, setHoverRating] = useState(0);
     const [review, setReview] = useState('');
     const [reviews, setReviews] = useState([]);
+    const [added, setAdded] = useState(false);
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
 
     useEffect(() => {
         const fetchMedicineDetails = async () => {
@@ -35,7 +40,13 @@ const MedicineDetailsPage = () => {
         fetchMedicineDetails();
     }, [id]);
 
-    // console.log("medicine 85:", id)
+    const handleAddToCart = () => {
+        addToCart(medicine, 1);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
+    };
+
+    // console.log("medicine 85:", medicine)
 
     // ✅ Fetch reviews on load
     useEffect(() => {
@@ -134,9 +145,16 @@ const MedicineDetailsPage = () => {
                         </span>
                     </div>
 
-                    <div className="text-2xl font-semibold text-blue-600 mb-4">
-                        ৳ {medicine.price}
+
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="text-3xl font-bold text-blue-600 tracking-tight">
+                            ৳ {medicine.price}
+                        </div>
+                        <div className=" bg-green-100 text-green-700 text-sm font-medium px-4 py-1.5 rounded-full border border-green-300 shadow-sm">
+                            In stock: <span className="font-semibold">{medicine.piece}</span>
+                        </div>
                     </div>
+
 
                     <div className="mb-6">
                         <h2 className="text-lg font-semibold text-gray-800 mb-2">Description</h2>
@@ -163,8 +181,8 @@ const MedicineDetailsPage = () => {
                     </div>
 
                     <div className="flex space-x-4">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition duration-300">
-                            Add to Cart
+                        <button onClick={handleAddToCart} className={`text-sm py-2 px-3 rounded-md transition-colors font-medium ${added ? "bg-green-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+                            {added ? <span className="flex items-center justify-center gap-1"><CheckCircle className="w-4 h-4" /> Added</span> : "Add to Cart"}
                         </button>
                     </div>
                 </div>

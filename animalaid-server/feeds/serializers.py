@@ -6,7 +6,7 @@ class FeedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feed
-        fields = ['id', 'name', 'brand', 'quantity', 'unit', 'animal_category', 'price', 'discount','feed_type', 'description', 'image']
+        fields = ['id', 'name', 'brand', 'quantity', 'unit', 'animal_category', 'price', 'discount','feed_type', 'description', 'piece', 'image']
 
     def get_image(self, obj):
         request = self.context.get('request')

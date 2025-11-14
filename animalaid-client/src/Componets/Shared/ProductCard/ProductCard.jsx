@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../../../Context/CartContext.jsx';
+import { CheckCircle } from 'lucide-react';
 
 const fallbackImage = '/fallback-medicine.jpg'; // optional fallback if image fails
 
 const ProductCard = ({ product, type = 'medicin' }) => {
     const [imageLoading, setImageLoading] = useState(true);
     const [imageError, setImageError] = useState(false);
+    const [added, setAdded] = useState(false);
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
 
     const handleImageLoad = () => setImageLoading(false);
     const handleImageError = () => {
         setImageLoading(false);
         setImageError(true);
+    };
+
+    const handleAddToCart = () => {
+        addToCart(product, 1);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
     };
 
     return (
@@ -29,6 +40,9 @@ const ProductCard = ({ product, type = 'medicin' }) => {
                     onError={handleImageError}
                     style={{ display: imageLoading ? 'none' : 'block' }}
                 />
+            </div>
+            <div className="absolute top-3 left-3 bg-green-600 text-white text-sm font-normal px-3 py-1 rounded-full shadow-sm">
+                In stock {product.piece}
             </div>
 
             <div className="mt-4">
@@ -60,8 +74,8 @@ const ProductCard = ({ product, type = 'medicin' }) => {
                 </div>
 
                 <div className="mt-4 flex gap-2">
-                    <button className="flex-1 bg-blue-600 text-white text-xs py-2 px-3 rounded-md hover:bg-blue-700 transition-colors font-medium">
-                        Add to Cart
+                    <button onClick={handleAddToCart} className={`flex-1 text-xs py-2 px-3 rounded-md transition-colors font-medium ${added ? "bg-green-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+                        {added ? <span className="flex items-center justify-center gap-1"><CheckCircle className="w-4 h-4" /> Added</span> : "Add to Cart"}
                     </button>
                     <Link
                         to={`/${type}/${product.id}`}

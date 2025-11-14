@@ -19,6 +19,9 @@ import AdminLayout from "../Componets/Layouts/AdminLayouts";
 import DashboardAdmin from "../Componets/Admin/DashboardAdmin";
 import MedicineDetailsPage from "../Componets/Pages/DetailsPages/MedicineDetailsPages/MedicineDetailsPage";
 import FeedDetailsPage from "../Componets/Pages/DetailsPages/FeedDetailsPages/FeedDetailsPage";
+import Cart from "../Componets/Shared/ProductCard/Cart";
+import Checkout from "../Componets/Pages/ProductList/CheckOut";
+import PaymentSuccess from "../Componets/Pages/ProductList/PaymentSuccess";
 
 export const router = createBrowserRouter([
     {
@@ -60,6 +63,18 @@ export const router = createBrowserRouter([
             {
                 path: "/feed/category/:categoryName",
                 element: <FeedCategoryProductsPage></FeedCategoryProductsPage>
+            },
+            {
+                path: "/cart",
+                element: <Cart></Cart>
+            },
+            {
+                path: "/checkout",
+                element: <Checkout></Checkout>
+            },
+            {
+                path: "/checkout/success",
+                element: <PaymentSuccess></PaymentSuccess>
             }
 
         ]

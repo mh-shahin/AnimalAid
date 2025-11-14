@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 
 const FeedAdmin = () => {
     const [formData, setFormData] = useState({
-        name: '', brand: '', quantity: '', unit: '', animal_category: '', price: '', discount: '', feed_type: '', description: '', image: null
+        name: '', brand: '', quantity: '', unit: '', animal_category: '', price: '', discount: '', feed_type: '', description: '', piece: '', image: null
     });
     const [feeds, setFeeds] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -62,6 +62,7 @@ const FeedAdmin = () => {
     form.append('discount', formData.discount);
     form.append('feed_type', formData.feed_type);
     form.append('description', formData.description);
+    form.append('piece', formData.piece || 0);  // Default value for piece
 
     if (formData.image) {
         form.append('image', formData.image);
@@ -109,6 +110,7 @@ const FeedAdmin = () => {
             discount: '',
             feed_type: '',
             description: '',
+            piece: '',
             image: null
         });
 
@@ -131,6 +133,7 @@ const FeedAdmin = () => {
             discount: f.discount,
             feed_type: f.feed_type,
             description: f.description,
+            piece: f.piece,
             image: null
         });
         setEditingId(f.id);
@@ -173,7 +176,7 @@ const FeedAdmin = () => {
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Feed Administration</h1>
                     <button
                         onClick={() => {
-                            setFormData({ name: '', brand: '', quantity: '', unit: '', animal_category: '', price: '', discount: '', feed_type: '', description: '', image: null });
+                            setFormData({ name: '', brand: '', quantity: '', unit: '', animal_category: '', price: '', discount: '', feed_type: '', description: '', piece: '', image: null });
                             setEditingId(null);
                             setIsFormVisible(!isFormVisible);
                         }}
@@ -298,6 +301,17 @@ const FeedAdmin = () => {
                                         ))}
                                     </select>
                                 </div>
+                                <div className="form-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Added number of Bags</label>
+                                <input
+                                    type="number"
+                                    name="piece"
+                                    placeholder="Enter number of total bags"
+                                    value={formData.piece}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
 
                                 <div className="space-y-2 col-span-1 md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700">Description</label>
@@ -389,9 +403,12 @@ const FeedAdmin = () => {
                                     <img
                                         src={feed.image}
                                         alt={feed.name}
-                                        className="w-full h-full object-cover"
+                                        className="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
                                         loading="lazy"
                                     />
+                                    <div className="absolute top-3 left-3 bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm">
+                                        Stock {feed.piece}
+                                    </div>
                                     <div className="absolute top-3 right-3 bg-indigo-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm">
                                         {feed.animal_category}
                                     </div>

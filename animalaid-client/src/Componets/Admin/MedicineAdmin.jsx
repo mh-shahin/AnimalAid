@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 const MedicineAdmin = () => {
 
     const [formData, setFormData] = useState({
-        name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', generic_name: '', image: null
+        name: '', quantity: '',piece: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', generic_name: '', image: null
     });
 
     const [medicines, setMedicines] = useState([]);
@@ -15,7 +15,7 @@ const MedicineAdmin = () => {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-    const unitOptions = ['mg', 'g', 'kg', 'ml', 'L', 'tablet', 'capsule', 'patch'];
+    const unitOptions = ['mg', 'g', 'kg', 'ml', 'L', 'tablet', 'capsule'];
     const categoryOptions = ['Antibiotic', 'Analgesic', 'Antiviral', 'Antifungal', 'Nutritional Supplement', 'Vitamin', 'Antihistamine', 'Antiseptic'];
     const genericNameOptions = ["Amoxicillin","Enrofloxacin","Ivermectin","Vitamin B Complex","Tylosin","Doxycycline","Albendazole","Paracetamol","Ciprofloxacin","Oxytetracycline Dihydrate"];
 
@@ -64,6 +64,7 @@ const MedicineAdmin = () => {
         form.append('discount', formData.offer || 0);
         form.append('generic_name', formData.generic_name);
         form.append('description', formData.description);
+        form.append('piece', formData.piece || 0);
         if (formData.image) {
             form.append('image', formData.image);
         }
@@ -109,6 +110,7 @@ const MedicineAdmin = () => {
                 generic_name: '',
                 brand: '',
                 description: '',
+                piece: '',
                 image: null
             });
             setEditingId(null);
@@ -132,6 +134,7 @@ const MedicineAdmin = () => {
             generic_name: m.generic_name,
             brand: m.brand,
             description: m.description,
+            piece: m.piece,
             image: null
         });
         setEditingId(m.id);
@@ -185,7 +188,7 @@ const MedicineAdmin = () => {
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0">Medicine Administration</h1>
                     <button
                         onClick={() => {
-                            setFormData({ name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', image: null });
+                            setFormData({ name: '', quantity: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', piece: '', image: null });
                             setEditingId(null);
                             setIsFormVisible(!isFormVisible);
                         }}
@@ -316,6 +319,17 @@ const MedicineAdmin = () => {
                                 </select>
                             </div>
 
+                            <div className="form-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Added Pieces of Medicines</label>
+                                <input
+                                    type="number"
+                                    name="piece"
+                                    placeholder="Enter number of total pieces"
+                                    value={formData.piece}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
 
                             <div className="form-group col-span-1 md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -403,13 +417,16 @@ const MedicineAdmin = () => {
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
                         {filteredMedicines.map((medicine) => (
                             <div key={medicine.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full">
-                                <div className="relative h-60 md:h-64 bg-gray-50">
+                                <div className="relative h-44 md:h-64 bg-gray-50">
                                     <img
                                         src={medicine.image}
                                         alt={medicine.name}
-                                        className="w-full h-full object-cover"
+                                        className="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
                                         loading="lazy"
                                     />
+                                    <div className="absolute top-3 left-3 bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm">
+                                        Stock {medicine.piece}
+                                    </div>
                                     <div className="absolute top-3 right-3 bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm">
                                         {medicine.category}
                                     </div>

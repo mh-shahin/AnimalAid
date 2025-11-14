@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { StarIcon } from '@heroicons/react/24/solid';
+import { useCart } from '../../../../Context/CartContext.jsx';
+import { CheckCircle } from 'lucide-react';
 
 const FeedDetailsPage = () => {
     const { id } = useParams();
@@ -11,6 +13,9 @@ const FeedDetailsPage = () => {
     const [hoverRating, setHoverRating] = useState(0);
     const [review, setReview] = useState('');
     const [reviews, setReviews] = useState([]);
+    const [added, setAdded] = useState(false);
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
 
     useEffect(() => {
         const fetchFeedDetails = async () => {
@@ -34,6 +39,12 @@ const FeedDetailsPage = () => {
 
         fetchFeedDetails();
     }, [id]);
+
+    const handleAddToCart = () => {
+        addToCart(feeds, 1);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
+    };
 
     // console.log("Feed 85:", feeds)
 
@@ -133,8 +144,13 @@ const FeedDetailsPage = () => {
                         </span>
                     </div>
 
-                    <div className="text-2xl font-semibold text-blue-600 mb-4">
-                        ৳ {feeds.price}
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="text-3xl font-bold text-blue-600 tracking-tight">
+                            ৳ {feeds.price}
+                        </div>
+                        <div className=" bg-green-100 text-green-700 text-sm font-medium px-4 py-1.5 rounded-full border border-green-300 shadow-sm">
+                            In stock: <span className="font-semibold">{feeds.piece}</span>
+                        </div>
                     </div>
 
                     <div className="mb-6">
@@ -162,12 +178,10 @@ const FeedDetailsPage = () => {
                     </div>
 
                     <div className="flex space-x-4">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition duration-300">
-                            Add to Cart
+                        <button onClick={handleAddToCart} className={`text-sm py-2 px-3 rounded-md transition-colors font-medium ${added ? "bg-green-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+                            {added ? <span className="flex items-center justify-center gap-1"><CheckCircle className="w-4 h-4" /> Added</span> : "Add to Cart"}
                         </button>
-                        <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-2 rounded-md font-medium transition duration-300">
-                            Buy Now
-                        </button>
+                        
                     </div>
                 </div>
             </div>
