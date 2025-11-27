@@ -7,24 +7,6 @@ const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getTotal } = useCart();
   const navigate = useNavigate();
 
-  // if (!cartItems.length) {
-  //   return (
-  //     <div className="text-center py-20">
-  //       <img
-  //         src="/empty-cart.png"
-  //         alt="Empty Cart"
-  //         className="mx-auto h-40 opacity-80"
-  //       />
-  //       <h2 className="text-2xl font-semibold text-gray-700 mt-6">Your cart is empty</h2>
-  //       <Link
-  //         to="/"
-  //         className="mt-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-  //       >
-  //         Continue Shopping
-  //       </Link>
-  //     </div>
-  //   );
-  // }
   if (!cartItems.length) {
   return (
     <div className="flex flex-col items-center justify-center py-24 px-6 bg-gradient-to-b from-blue-50 to-white rounded-xl shadow-inner">

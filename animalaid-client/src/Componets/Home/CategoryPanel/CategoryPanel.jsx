@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from "react-router-dom";
-import { Pill, UserPlus, ShoppingBag } from "lucide-react";
+import { Pill, UserPlus, ShoppingBag, BookOpen  } from "lucide-react";
 
 const CategoryPanel = () => {
     return (
@@ -26,13 +26,13 @@ const CategoryPanel = () => {
                     icon={<UserPlus className="w-5 h-5" />}
                     text="Consultation"
                 />
-                {/* 
+                
                 <CategoryLink
-                    to="/farm-equipment"
-                    icon={<Leaf className="w-5 h-5" />}
-                    text="Farm Equipment"
+                    to="/blogs"
+                    icon={<BookOpen className="w-5 h-5" />}
+                    text="Blogs"
                 /> 
-                */}
+               
             </div>
 
             {/* Special Offers */}

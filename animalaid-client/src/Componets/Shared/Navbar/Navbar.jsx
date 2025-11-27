@@ -1,309 +1,546 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, User, LogOut, Settings, Heart, ShoppingCart, ChevronDown, X, Bell } from "lucide-react";
+import { Search, User, LogOut, Settings, Heart, ShoppingCart, ChevronDown, X, Bell, Package, Menu, Phone, Mail } from "lucide-react";
 import { useCart } from "../../../Context/CartContext";
 
 const Navbar = () => {
-    // Get user data from localStorage or your auth context
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [showUserMenu, setShowUserMenu] = useState(false);
-    const [searchFocused, setSearchFocused] = useState(false);
-    const [suggestions, setSuggestions] = useState([]);
-    const [showCartDropdown, setShowCartDropdown] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showCartDropdown, setShowCartDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-    const userMenuRef = useRef(null);
-    const searchRef = useRef(null);
-    const cartRef = useRef(null);
+  const userMenuRef = useRef(null);
+  const searchRef = useRef(null);
+  const cartRef = useRef(null);
 
-    const navigate = useNavigate();
-    const { cartItems, getCount, removeFromCart } = useCart();
+  const navigate = useNavigate();
+  const { cartItems, getCount, removeFromCart } = useCart();
 
-    // Check if user is logged in on component mount and auth state changes
-    useEffect(() => {
-        const checkAuthStatus = () => {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                setIsLoggedIn(true);
-            } else {
-                setIsLoggedIn(false);
-            }
-        };
+  // Sample suggestions for search
+  const sampleSuggestions = [
+    { id: 1, name: "Antibiotics for Dogs", type: "medicine", category: "Medicine" },
+    { id: 2, name: "Cattle Feed Premium", type: "feed", category: "Feed" },
+    { id: 3, name: "Veterinary Stethoscope", type: "equipment", category: "Equipment" },
+    { id: 4, name: "Poultry Vaccine", type: "medicine", category: "Medicine" },
+    { id: 5, name: "Animal Thermometer", type: "equipment", category: "Equipment" }
+  ];
 
-        checkAuthStatus();
+  // Fetch user data from API
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("accessToken");
 
-        // Listen for storage events (in case user logs in/out in another tab)
-        window.addEventListener('storage', checkAuthStatus);
-
-        return () => {
-            window.removeEventListener('storage', checkAuthStatus);
-        };
-    }, []);
-
-    // User data - in a real app, get this from your auth context or API
-    const user = isLoggedIn ? {
-        name: localStorage.getItem('userName') || "User",
-        email: localStorage.getItem('userEmail') || "user@example.com",
-        avatarUrl: localStorage.getItem('userAvatar') || "/api/placeholder/40/40"
-    } : null;
-
-    // Close user menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-                setShowUserMenu(false);
-            }
-
-            if (searchRef.current && !searchRef.current.contains(event.target)) {
-                setSearchFocused(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    useEffect(() => {
-        setShowCartDropdown(false);
-    }, []);
-
-    // Search suggestions handler
-    useEffect(() => {
-        if (searchQuery.length > 1) {
-            const filtered = sampleSuggestions.filter(item =>
-                item.name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setSuggestions(filtered);
-        } else {
-            setSuggestions([]);
-        }
-    }, [searchQuery]);
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-            setSearchFocused(false);
-        }
-    };
-
-    const handleLogout = () => {
-        // Clear auth data
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('userAvatar');
-
-        // Update state
+      if (!token) {
         setIsLoggedIn(false);
+        setUserData(null);
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch("http://localhost:8000/api/accounts/user/", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const userData = data.user || data;
+        setUserData(userData);
+        setIsLoggedIn(true);
+      } else {
+        localStorage.removeItem("accessToken");
+        setIsLoggedIn(false);
+        setUserData(null);
+      }
+    } catch (error) {
+      setIsLoggedIn(false);
+      setUserData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+
+    const handleLoginSuccess = () => {
+      fetchUserData();
+    };
+
+    window.addEventListener('loginSuccess', handleLoginSuccess);
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'accessToken') {
+        fetchUserData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('loginSuccess', handleLoginSuccess);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
-
-        // Navigate to home (optional)
-        navigate('/');
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchFocused(false);
+      }
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setShowCartDropdown(false);
+      }
     };
 
-    // Navigate to login page
-    const goToLogin = () => {
-        navigate('/login');
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    return (
-        <nav className="bg-white shadow-md sticky top-0 z-50">
-            <div className="container mx-auto px-4">
-                <div className="flex items-center justify-between h-16">
-                    {/* Left: Logo & Brand */}
-                    <div className="flex items-center">
-                        <Link to="/" className="flex items-center space-x-2">
-                            <span className="text-2xl font-bold">
-                                <span className="text-blue-600">Animal</span>
-                                <span className="text-gray-800">Aid</span>
-                            </span>
-                        </Link>
-                    </div>
+  // Search suggestions handler
+  useEffect(() => {
+    if (searchQuery.length > 1) {
+      const filtered = sampleSuggestions.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery]);
 
-                    {/* Middle: Search Bar */}
-                    <div className="flex-1 max-w-lg mx-6" ref={searchRef}>
-                        <div className="relative">
-                            <form onSubmit={handleSearch} className="relative">
-                                <div className="flex items-center relative">
-                                    <div className="absolute left-3 text-gray-400">
-                                        <Search className="h-7 w-7" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Search medicines, equipment, feed..."
-                                        className={`w-full py-2 pl-12 pr-4 rounded-full font-normal text-xl bg-gray-100 border ${searchFocused
-                                            ? "border-blue-500 ring-2 ring-blue-100"
-                                            : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                                            } text-sm transition-all duration-200`}
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        onFocus={() => setSearchFocused(true)}
-                                    />
-                                    {searchQuery && (
-                                        <button
-                                            type="button"
-                                            className="absolute right-3 text-gray-400 hover:text-gray-600"
-                                            onClick={() => setSearchQuery("")}
-                                        >
-                                            <X className="h-7 w-7" />
-                                        </button>
-                                    )}
-                                </div>
-                            </form>
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchFocused(false);
+      setSearchQuery("");
+    }
+  };
 
-                            {/* Search suggestions */}
-                            {searchFocused && suggestions.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-10">
-                                    {suggestions.map((item) => (
-                                        <Link
-                                            key={item.id}
-                                            to={`/search?q=${encodeURIComponent(item.name)}`}
-                                            className="flex items-center px-4 py-2 hover:bg-gray-50"
-                                            onClick={() => setSearchFocused(false)}
-                                        >
-                                            <div className="flex-1">
-                                                <span className="text-sm text-gray-800">{item.name}</span>
-                                                <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${item.type === "medicine" ? "bg-red-100 text-red-800" :
-                                                    item.type === "equipment" ? "bg-green-100 text-green-800" :
-                                                        "bg-yellow-100 text-yellow-800"
-                                                    }`}>
-                                                    {item.type}
-                                                </span>
-                                            </div>
-                                            <Search className="h-4 w-4 text-gray-400" />
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userRole");
+    setIsLoggedIn(false);
+    setUserData(null);
+    setShowUserMenu(false);
+    navigate('/');
+    window.dispatchEvent(new Event('logoutSuccess'));
+  };
 
-                    {/* Right: User Controls */}
-                    <div className="flex items-center space-x-4">
-                        {/* Notification Bell - Only show when logged in */}
-                        {isLoggedIn && (
-                            <button className="relative p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <Bell className="h-6 w-6" />
-                                <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-                            </button>
-                        )}
+  const goToLogin = () => {
+    navigate('/login');
+  };
 
-                        {/* Cart - Always visible */}
-                        <Link to="/cart" className="relative p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none hidden md:block">
-                            <ShoppingCart className="h-6 w-6" />
-                            {getCount() > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
-                                    {getCount()}
-                                </span>
-                            )}
-                        </Link>
-                        <div className="relative" ref={cartRef}>
-                            <button onClick={() => setShowCartDropdown((prev) => !prev)} className="p-1 rounded-full text-gray-500 hover:bg-gray-100 md:hidden">
-                                <ShoppingCart className="h-6 w-6" />
-                                {getCount() > 0 && <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">{getCount()}</span>}
-                            </button>
-                            {showCartDropdown && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200">
-                                    <div className="px-3 py-2 border-b text-sm font-medium">Cart ({getCount()})</div>
-                                    <div className="max-h-60 overflow-auto">
-                                        {cartItems.length === 0 ? (
-                                            <div className="p-4 text-center text-sm text-gray-600">Your cart is empty</div>
-                                        ) : cartItems.map(item => (
-                                            <div key={item.id} className="flex items-center gap-3 px-3 py-2 border-b">
-                                                <img src={item.image} alt={item.name} className="h-10 w-10 object-contain rounded" />
-                                                <div className="flex-1 text-sm">
-                                                    <div className="font-medium text-gray-800">{item.name}</div>
-                                                    <div className="text-gray-500">৳{Number(item.price).toFixed(2)} × {item.quantity}</div>
-                                                </div>
-                                                <button onClick={() => removeFromCart(item.id)} className="text-red-500 text-sm">Remove</button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="px-3 py-2 flex items-center justify-between">
-                                        <Link to="/cart" onClick={() => setShowCartDropdown(false)} className="text-blue-600 text-sm font-medium">View Cart</Link>
-                                        <Link to="/checkout" onClick={() => setShowCartDropdown(false)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Checkout</Link>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!userData) return "U";
+    const firstName = userData.first_name || "";
+    const lastName = userData.last_name || "";
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    return initials || userData.email?.charAt(0).toUpperCase() || "U";
+  };
 
-                        {/* Wishlist - Only show when logged in */}
-                        {isLoggedIn && (
-                            <Link to="/wishlist" className="p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 hidden md:block">
-                                <Heart className="h-6 w-6" />
-                            </Link>
-                        )}
+  // Get display name
+  const getDisplayName = () => {
+    if (!userData) return "User";
+    return userData.first_name || userData.email?.split('@')[0] || "User";
+  };
 
-                        {/* User Menu / Login Button */}
-                        <div className="relative" ref={userMenuRef}>
-                            {isLoggedIn ? (
-                                <>
-                                    <button
-                                        className="flex items-center space-x-1 focus:outline-none"
-                                        onClick={() => setShowUserMenu(!showUserMenu)}
-                                    >
-                                        <img
-                                            src={user.avatarUrl}
-                                            alt="User profile"
-                                            className="h-8 w-8 rounded-full object-cover border-2 border-blue-600"
-                                        />
-                                        <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${showUserMenu ? 'rotate-180' : 'rotate-0'}`} />
-                                    </button>
+  // Calculate cart total
+  const getCartTotal = () => {
+    return cartItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
+  };
 
-                                    {/* User Dropdown Menu */}
-                                    {showUserMenu && (
-                                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                                            <div className="px-4 py-3 border-b border-gray-100">
-                                                <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                            </div>
-
-                                            <Link
-                                                to="/profile"
-                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                onClick={() => setShowUserMenu(false)}
-                                            >
-                                                <User className="h-4 w-4 mr-3 text-gray-500" />
-                                                Your Profile
-                                            </Link>
-
-                                            <Link
-                                                to="/settings"
-                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                onClick={() => setShowUserMenu(false)}
-                                            >
-                                                <Settings className="h-4 w-4 mr-3 text-gray-500" />
-                                                Account Settings
-                                            </Link>
-
-                                            <hr className="my-1 border-gray-100" />
-
-                                            <button
-                                                className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                onClick={handleLogout}
-                                            >
-                                                <LogOut className="h-4 w-4 mr-3 text-gray-500" />
-                                                Sign out
-                                            </button>
-                                        </div>
-                                    )}
-                                </>
-                            ) : (
-                                <button
-                                    onClick={goToLogin}
-                                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-full text-sm font-medium transition-colors duration-300"
-                                >
-                                    <User className="h-4 w-4" />
-                                    <span>Login</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
+  return (
+    <>
+      {/* Main Navbar */}
+      <nav className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-20">
+            
+            {/* Logo Section */}
+            <div className="flex items-center gap-8">
+              <Link to="/" className="flex items-center gap-3 group">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                    <span className="text-white font-black text-2xl">A</span>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                 </div>
+                <div>
+                  <div className="text-2xl font-black leading-none">
+                    <span className="text-blue-600">Animal</span>
+                    <span className="text-gray-900">Aid</span>
+                  </div>
+                  <div className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">
+                    Veterinary Supplies
+                  </div>
+                </div>
+              </Link>
             </div>
-        </nav>
-    );
+
+            {/* Search Bar */}
+            <div className="hidden lg:flex flex-1 max-w-2xl mx-8" ref={searchRef}>
+              <form onSubmit={handleSearch} className="relative w-full">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search for medicines, equipment, feed..."
+                    className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Search Suggestions Dropdown */}
+                {searchFocused && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                    <div className="py-2">
+                      {suggestions.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setSearchQuery(item.name);
+                            setSearchFocused(false);
+                            navigate(`/search?q=${encodeURIComponent(item.name)}`);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left"
+                        >
+                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Search className="h-4 w-4 text-gray-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{item.category}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0
+                            ${item.type === "medicine" ? "bg-red-50 text-red-600" :
+                              item.type === "equipment" ? "bg-green-50 text-green-600" :
+                                "bg-amber-50 text-amber-600"
+                            }`}>
+                            {item.category}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              
+              {/* Mobile Search */}
+              <button 
+                onClick={() => setSearchFocused(true)}
+                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <Search className="h-5 w-5 text-gray-700" />
+              </button>
+
+              {/* Notifications */}
+              {/* {isLoggedIn && (
+                <button className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+                  <Bell className="h-5 w-5 text-gray-700" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                </button>
+              )} */}
+
+              {/* Wishlist */}
+              {/* {isLoggedIn && (
+                <Link
+                  to="/wishlist"
+                  className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
+                >
+                  <Heart className="h-5 w-5 text-gray-700" />
+                </Link>
+              )} */}
+
+              {/* Cart */}
+              <div className="relative" ref={cartRef}>
+                <button
+                  onClick={() => setShowCartDropdown(!showCartDropdown)}
+                  className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <ShoppingCart className="h-5 w-5 text-gray-700" />
+                  {getCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {getCount()}
+                    </span>
+                  )}
+                </button>
+
+                {/* Cart Dropdown */}
+                {showCartDropdown && (
+                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                    <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+                      <div>
+                        <h3 className="font-bold text-gray-900">Shopping Cart</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">{getCount()} {getCount() === 1 ? 'item' : 'items'}</p>
+                      </div>
+                      <button
+                        onClick={() => setShowCartDropdown(false)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+                      >
+                        <X className="h-4 w-4 text-gray-600" />
+                      </button>
+                    </div>
+
+                    <div className="max-h-96 overflow-y-auto">
+                      {cartItems.length === 0 ? (
+                        <div className="py-16 px-6 text-center">
+                          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ShoppingCart className="h-10 w-10 text-gray-300" />
+                          </div>
+                          <p className="text-sm font-medium text-gray-900">Your cart is empty</p>
+                          <p className="text-xs text-gray-500 mt-1">Add products to get started</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {cartItems.map(item => (
+                            <div key={item.id} className="flex gap-4 p-4 hover:bg-gray-50 transition-colors">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-20 h-20 object-cover rounded-xl bg-gray-100"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900 mb-1 truncate">{item.name}</h4>
+                                <p className="text-xs text-gray-500 mb-2">Quantity: {item.quantity}</p>
+                                <p className="text-base font-bold text-blue-600">
+                                  ৳{(Number(item.price) * item.quantity).toFixed(2)}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => removeFromCart(item.id)}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {cartItems.length > 0 && (
+                      <div className="p-6 border-t bg-gray-50">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-semibold text-gray-700">Subtotal</span>
+                          <span className="text-2xl font-bold text-gray-900">৳{getCartTotal().toFixed(2)}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Link
+                            to="/cart"
+                            onClick={() => setShowCartDropdown(false)}
+                            className="h-11 flex items-center justify-center border-2 border-blue-600 text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
+                          >
+                            View Cart
+                          </Link>
+                          <Link
+                            to="/checkout"
+                            onClick={() => setShowCartDropdown(false)}
+                            className="h-11 flex items-center justify-center bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30"
+                          >
+                            Checkout
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* User Menu */}
+              <div className="relative ml-2" ref={userMenuRef}>
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                    <div className="hidden md:block w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                ) : isLoggedIn ? (
+                  <>
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="flex items-center gap-2 h-10 pl-1 pr-3 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold shadow-md">
+                        {getUserInitials()}
+                      </div>
+                      <div className="hidden md:block text-left">
+                        <p className="text-sm font-bold text-gray-900 leading-tight">
+                          {getDisplayName()}
+                        </p>
+                      </div>
+                      <ChevronDown className={`hidden md:block h-4 w-4 text-gray-500 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* User Dropdown */}
+                    {showUserMenu && (
+                      <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                        <div className="p-6 bg-gradient-to-br from-blue-500 to-blue-700">
+                          <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                              {getUserInitials()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-white text-lg truncate">
+                                {userData?.first_name && userData?.last_name
+                                  ? `${userData.first_name} ${userData.last_name}`
+                                  : getDisplayName()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-2">
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <User className="h-5 w-5 text-gray-600" />
+                            </div>
+                            <span className="font-semibold text-gray-700">My Profile</span>
+                          </Link>
+
+                          <Link
+                            to="/orders"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <Package className="h-5 w-5 text-gray-600" />
+                            </div>
+                            <span className="font-semibold text-gray-700">My Orders</span>
+                          </Link>
+
+                          <Link
+                            to="/settings"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <Settings className="h-5 w-5 text-gray-600" />
+                            </div>
+                            <span className="font-semibold text-gray-700">Settings</span>
+                          </Link>
+                        </div>
+
+                        <div className="p-2 border-t">
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors"
+                          >
+                            <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                              <LogOut className="h-5 w-5 text-red-600" />
+                            </div>
+                            <span className="font-semibold text-red-600">Sign Out</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={goToLogin}
+                    className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold transition-colors shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Login</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Search Overlay */}
+      {searchFocused && (
+        <div className="lg:hidden fixed inset-0 bg-white z-50 animate-fadeIn">
+          <div className="p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => {
+                  setSearchFocused(false);
+                  setSearchQuery("");
+                }}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <form onSubmit={handleSearch} className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    className="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              </form>
+            </div>
+
+            {suggestions.length > 0 && (
+              <div className="space-y-2">
+                {suggestions.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setSearchQuery(item.name);
+                      setSearchFocused(false);
+                      navigate(`/search?q=${encodeURIComponent(item.name)}`);
+                    }}
+                    className="w-full flex items-center gap-3 p-4 bg-white hover:bg-gray-50 rounded-2xl transition-colors border border-gray-100"
+                  >
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <Search className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium text-gray-900">{item.name}</p>
+                      <p className="text-sm text-gray-500">{item.category}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Navbar;

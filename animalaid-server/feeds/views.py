@@ -7,7 +7,6 @@ from .models import Feed
 from .serializers import FeedSerializer
 
 
-# Create your views here.
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @parser_classes([MultiPartParser, FormParser])
 def feeds_view(request):
@@ -50,14 +49,29 @@ def feeds_view(request):
             return Response({'message': 'Feed deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Feed.DoesNotExist:
             return Response({'error': 'Feed not found'}, status=status.HTTP_404_NOT_FOUND)
-  
+
         
-@api_view(['GET'])
+@api_view(['GET', 'PATCH', 'PUT'])  # ✅ ADDED PATCH HERE
 def get_feeds_by_id(request, pk):
     try:
         feed = Feed.objects.get(pk=pk)
     except Feed.DoesNotExist:
         return Response({'error': 'Feed not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = FeedSerializer(feed, context={'request': request})
-    return Response(serializer.data)
+    if request.method == 'GET':
+        serializer = FeedSerializer(feed, context={'request': request})
+        return Response(serializer.data)
+    
+    elif request.method == 'PATCH':  # ✅ ADDED PATCH SUPPORT
+        serializer = FeedSerializer(feed, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'PUT':  # ✅ ADDED PUT SUPPORT
+        serializer = FeedSerializer(feed, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

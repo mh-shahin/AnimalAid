@@ -1,145 +1,13 @@
-// import React, { useState } from "react";
-// import { useCart } from "../../../Context/CartContext.jsx";
-// import { useNavigate } from "react-router-dom";
-
-// const Checkout = () => {
-//   const { cartItems, getTotal, clearCart } = useCart();
-//   const navigate = useNavigate();
-
-//   const [address, setAddress] = useState({ name: "", phone: "", addressLine: "", city: "", postal: "" });
-//   const [paymentMethod, setPaymentMethod] = useState("cod"); // 'cod' or 'mobile'
-//   const [processing, setProcessing] = useState(false);
-//   const [error, setError] = useState("");
-
-//   if (!cartItems.length) {
-//     return (
-//       <div className="text-center mt-20">
-//         <h2 className="text-2xl font-semibold">Your cart is empty</h2>
-//       </div>
-//     );
-//   }
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setError("");
-
-//     // Basic validation
-//     if (!address.name || !address.phone || !address.addressLine) {
-//       setError("Please fill in name, phone and address.");
-//       return;
-//     }
-
-//     setProcessing(true);
-
-//     // Simulate API call to create order -> replace with real endpoint later (Django)
-//     try {
-//       // Simulated delay
-//       await new Promise(r => setTimeout(r, 1500));
-
-//       // If using mobile banking, simulate a redirect or verification step
-//       if (paymentMethod === "mobile") {
-//         // Simulate mobile bank QR/payment success
-//         await new Promise(r => setTimeout(r, 1000));
-//       }
-
-//       // Order success: clear cart and navigate to success page
-//       clearCart();
-//       navigate("/checkout/success", { state: { message: "Order placed successfully.", total: getTotal() } });
-//     } catch (err) {
-//       console.error(err);
-//       setError("Failed to process the order. Please try again.");
-//     } finally {
-//       setProcessing(false);
-//     }
-//   };
-
-//   return (
-//     <div className="max-w-3xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
-//       <h2 className="text-2xl font-semibold mb-4">Checkout</h2>
-
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <div>
-//           <label className="block text-sm font-medium">Full name</label>
-//           <input value={address.name} onChange={e => setAddress({...address, name: e.target.value})} className="w-full border rounded px-3 py-2 mt-1" />
-//         </div>
-
-//         <div>
-//           <label className="block text-sm font-medium">Phone</label>
-//           <input value={address.phone} onChange={e => setAddress({...address, phone: e.target.value})} className="w-full border rounded px-3 py-2 mt-1" />
-//         </div>
-
-//         <div>
-//           <label className="block text-sm font-medium">Address</label>
-//           <textarea value={address.addressLine} onChange={e => setAddress({...address, addressLine: e.target.value})} className="w-full border rounded px-3 py-2 mt-1" />
-//         </div>
-
-//         <div className="grid grid-cols-2 gap-4">
-//           <div>
-//             <label className="block text-sm font-medium">City</label>
-//             <input value={address.city} onChange={e => setAddress({...address, city: e.target.value})} className="w-full border rounded px-3 py-2 mt-1" />
-//           </div>
-//           <div>
-//             <label className="block text-sm font-medium">Postal / ZIP</label>
-//             <input value={address.postal} onChange={e => setAddress({...address, postal: e.target.value})} className="w-full border rounded px-3 py-2 mt-1" />
-//           </div>
-//         </div>
-
-//         <div>
-//           <label className="block text-sm font-medium mb-2">Payment method</label>
-//           <div className="space-y-2">
-//             <label className="flex items-center gap-3">
-//               <input type="radio" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} />
-//               <span>Cash on Delivery (Pay when courier arrives)</span>
-//             </label>
-//             <label className="flex items-center gap-3">
-//               <input type="radio" checked={paymentMethod === "mobile"} onChange={() => setPaymentMethod("mobile")} />
-//               <span>Mobile Banking (bKash / Rocket / Nagad - simulated)</span>
-//             </label>
-//           </div>
-//         </div>
-
-//         <div className="bg-gray-50 p-4 rounded">
-//           <div className="flex justify-between">
-//             <span className="text-sm text-gray-600">Products</span>
-//             <span className="font-medium">৳{getTotal().toFixed(2)}</span>
-//           </div>
-//         </div>
-
-//         {error && <div className="text-red-600">{error}</div>}
-
-//         <div className="flex items-center gap-3">
-//           <button disabled={processing} type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
-//             {processing ? "Processing..." : (paymentMethod === "cod" ? "Place Order (COD)" : "Proceed to Mobile Payment")}
-//           </button>
-//           <button type="button" className="text-gray-700 border px-4 py-2 rounded" onClick={() => navigate(-1)}>Back</button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Checkout;
-
-import React, { useState } from "react";
-import { useCart } from "../../../Context/CartContext.jsx";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-/*
-  Option A: simple mobile-bank simulation.
-  - If 'mobile' chosen, we show a modal to enter sender phone + transaction id.
-  - We simulate a verification delay and then confirm the order.
-*/
-
-const Spinner = ({ size = 20 }) => (
-  <svg className={`animate-spin inline-block w-${size} h-${size}`} viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-  </svg>
-);
+import Stepper from "../ProductList/PaymentFunction/Stepper.jsx";
+import OrderSummary from "../ProductList/PaymentFunction/OrderSummary.jsx";
+import { useCart } from "../../../Context/CartContext.jsx";
 
 const Checkout = () => {
   const { cartItems, getTotal, clearCart } = useCart();
   const navigate = useNavigate();
+  const total = getTotal ? getTotal() : 0;
 
   const [address, setAddress] = useState({
     name: "",
@@ -148,395 +16,384 @@ const Checkout = () => {
     city: "",
     postal: "",
   });
-  const [paymentMethod, setPaymentMethod] = useState("cod"); // 'cod' | 'mobile'
-  const [processing, setProcessing] = useState(false);
+
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(0);
   const [error, setError] = useState("");
-  const [showMobileModal, setShowMobileModal] = useState(false);
 
-  // mobile payment modal values
-  const [mobilePhone, setMobilePhone] = useState("");
-  const [txId, setTxId] = useState("");
-  const [mobileError, setMobileError] = useState("");
-  const [mobileProcessing, setMobileProcessing] = useState(false);
-
-  if (!cartItems.length) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
-        <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
-        <p className="text-gray-600">Add some medicines or feed to checkout.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!cartItems || cartItems.length === 0) {
+      navigate("/cart");
+    }
+  }, [cartItems, navigate]);
 
   const requiredFilled = () =>
-    address.name.trim() && address.phone.trim() && address.addressLine.trim();
+    address.name.trim() &&
+    address.phone.trim() &&
+    address.addressLine.trim() &&
+    address.city.trim() &&
+    address.postal.trim();
 
-  const simulateServerOrder = async (payload) => {
-    // In real-app: POST /api/orders with payload
-    // Simulate network + server processing delay
-    await new Promise((r) => setTimeout(r, 1400));
-    // simulate order id
-    return {
-      success: true,
-      orderId: `AA-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
-      createdAt: new Date().toISOString(),
-    };
-  };
-
-  const handlePlaceOrderCOD = async (e) => {
-    e.preventDefault();
+  const goNext = () => {
+    if (step === 0 && !requiredFilled()) {
+      setError("Please fill all input field before continuing.");
+      return;
+    }
     setError("");
+    setStep((s) => Math.min(2, s + 1));
+  };
+
+  // ✅ FIXED: Better handling of product_type
+  const mapCartItemsToOrderItems = () => {
+    return cartItems.map((item) => {
+      // Try multiple possible field names for product type
+      const productType = 
+        item.product_type || 
+        item.type || 
+        item.productType ||
+        (item.category && item.category.toLowerCase()) ||
+        "medicine"; // Last resort default
+
+      return {
+        product: item.id,
+        quantity: item.quantity,
+        product_type: productType,
+      };
+    });
+  };
+
+  const handlePlaceOrderCOD = async () => {
     if (!requiredFilled()) {
-      setError("Please fill in name, phone and address.");
+      setError("Please fill required fields.");
       return;
     }
+    setLoading(true);
 
-    setProcessing(true);
     try {
-      const payload = {
-        cart: cartItems,
-        address,
-        payment: { method: "cod" },
-        total: getTotal(),
+      // ✅ Use the improved mapping function
+      const items = mapCartItemsToOrderItems();
+
+      // ✅ Validate that we have the correct types
+      const hasInvalidTypes = items.some(
+        item => !["medicine", "feed"].includes(item.product_type)
+      );
+      
+      if (hasInvalidTypes) {
+        console.warn("⚠️ Some items have invalid product_type:", items);
+      }
+
+      const orderPayload = {
+        user: 1, // Replace with actual authenticated user ID
+        total_amount: parseFloat(total),
+        delivery_charge: 59.00,
+        discount_amount: 0.00,
+        items: items,
+        shipping_address: {
+          name: address.name,
+          phone: address.phone,
+          address_line: address.addressLine,
+          city: address.city,
+          postal: address.postal,
+          country: "Bangladesh"
+        },
+        payment: {
+          method: "cod",
+          provider: "",
+          transaction_id: "",
+          sender_phone: "",
+          amount: parseFloat(total) + 59.00,
+          status: "pending",
+        },
+        customer_notes: ""
       };
 
-      const res = await simulateServerOrder(payload);
+      const res = await fetch("http://127.0.0.1:8000/orders/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderPayload),
+      });
 
-      if (res.success) {
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // Clear cart
         clearCart();
-        navigate("/checkout/success", {
-          state: {
-            message: "Order placed successfully (Cash on Delivery).",
-            total: getTotal(),
-            orderId: res.orderId,
-            createdAt: res.createdAt,
-            payment: { method: "cod" },
-          },
-        });
+        localStorage.removeItem('animalaid_cart');
+                
+        // Navigate to success page
+        setTimeout(() => {
+          navigate("/checkout/success", {
+            state: {
+              success: true,
+              message: data.message || "Order placed successfully.",
+              orderId: data.order_id,
+              total: total + 59,
+              createdAt: data.created_at,
+            },
+            replace: true,
+          });
+        }, 100);
       } else {
-        setError("Failed to place order. Please try again.");
+        console.error("❌ COD order failed:", data);
+        setError(data.message || "Could not place order. Try again later.");
       }
     } catch (err) {
-      console.error(err);
-      setError("Unexpected error. Try again.");
+      console.error("❌ COD order error:", err);
+      setError("Server error. Please try again.");
     } finally {
-      setProcessing(false);
+      setLoading(false);
     }
   };
 
-  const openMobileModal = (e) => {
-    e.preventDefault();
+  const handleProceedToProvider = () => {
     if (!requiredFilled()) {
-      setError("Please fill in name, phone and address before mobile payment.");
+      setError("Please fill required fields before proceeding.");
       return;
     }
-    setMobilePhone("");
-    setTxId("");
-    setMobileError("");
-    setShowMobileModal(true);
-  };
-
-  const handleMobilePaymentSubmit = async (e) => {
-    e.preventDefault();
-    setMobileError("");
-
-    // basic validation
-    if (!mobilePhone.trim() || !txId.trim()) {
-      setMobileError("Please enter sender phone and transaction ID.");
-      return;
-    }
-    // optional: basic format checks
-    if (!/^\d{10,14}$/.test(mobilePhone)) {
-      setMobileError("Enter a valid phone number (digits only).");
-      return;
-    }
-    if (txId.length < 6) {
-      setMobileError("Transaction ID looks too short.");
+    if (!paymentMethod) {
+      setError("Please choose a payment provider.");
       return;
     }
 
-    setMobileProcessing(true);
+    // ✅ Use the improved mapping function
+    const items = mapCartItemsToOrderItems();
 
-    try {
-      // Simulate server verification of tx id
-      await new Promise((r) => setTimeout(r, 1400));
+    const orderPayload = {
+      user: 1,
+      total_amount: parseFloat(total),
+      delivery_charge: 59.00,
+      discount_amount: 0.00,
+      items,
+      shipping_address: {
+        name: address.name,
+        phone: address.phone,
+        address_line: address.addressLine,
+        city: address.city,
+        postal: address.postal,
+        country: "Bangladesh"
+      },
+      payment: {
+        method: paymentMethod,
+        provider: paymentMethod,
+        transaction_id: "",
+        sender_phone: "",
+        amount: parseFloat(total) + 59.00,
+        status: "pending",
+      },
+      customer_notes: ""
+    };
 
-      // We'll treat txId as valid for the demo
-      const payload = {
-        cart: cartItems,
-        address,
-        payment: { method: "mobile", provider: "bKash/Nagad/Rocket", senderPhone: mobilePhone, txId },
-        total: getTotal(),
-      };
-
-      const res = await simulateServerOrder(payload);
-
-      if (res.success) {
-        clearCart();
-        setShowMobileModal(false);
-        navigate("/checkout/success", {
-          state: {
-            message: "Payment successful. Order placed.",
-            total: getTotal(),
-            orderId: res.orderId,
-            createdAt: res.createdAt,
-            payment: { method: "mobile", provider: "bKash/Nagad/Rocket", senderPhone: mobilePhone, txId },
-          },
-        });
-      } else {
-        setMobileError("Transaction verification failed. Please check and retry.");
-      }
-    } catch (err) {
-      console.error(err);
-      setMobileError("Verification error. Try again.");
-    } finally {
-      setMobileProcessing(false);
-    }
+    navigate(`/payment/${paymentMethod}`, {
+      state: { orderPayload },
+    });
   };
 
   return (
-    <>
-      <div className="max-w-6xl mx-auto py-10 px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT: FORM */}
-        <form className="lg:col-span-2 bg-white rounded-xl shadow p-6" onSubmit={paymentMethod === "cod" ? handlePlaceOrderCOD : openMobileModal}>
-          <h2 className="text-2xl font-semibold mb-4">Checkout</h2>
+    <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <main className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+        <Stepper steps={["Address", "Payment", "Confirm"]} current={step} />
 
-          {/* Step hint */}
-          <div className="mb-4 text-sm text-gray-600">
-            Complete the form and choose a payment method. All fields are required.
-          </div>
-
-          {/* Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Full name</span>
-              <input
-                value={address.name}
-                onChange={(e) => setAddress({ ...address, name: e.target.value })}
-                className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                placeholder="Your full name"
-                required
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Phone</span>
-              <input
-                value={address.phone}
-                onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                placeholder="e.g. 01XXXXXXXXX"
-                required
-              />
-            </label>
-          </div>
-
-          {/* Address */}
-          <div className="mb-4">
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Address</span>
-              <textarea
-                value={address.addressLine}
-                onChange={(e) => setAddress({ ...address, addressLine: e.target.value })}
-                className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                rows={3}
-                placeholder="House, road, area, landmark..."
-                required
-              />
-            </label>
-          </div>
-
-          {/* City + Postal */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">City</span>
-              <input
-                value={address.city}
-                onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                placeholder="City"
-              />
-            </label>
-
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Postal / ZIP</span>
-              <input
-                value={address.postal}
-                onChange={(e) => setAddress({ ...address, postal: e.target.value })}
-                className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                placeholder="Postal code"
-              />
-            </label>
-          </div>
-
-          {/* Payment method */}
-          <div className="mb-6">
-            <span className="text-sm font-medium text-gray-700 block mb-2">Payment method</span>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <label className={`p-3 border rounded-lg cursor-pointer transition ${paymentMethod === "cod" ? "border-blue-500 bg-blue-50" : "hover:border-gray-300"}`}>
-                <input
-                  type="radio"
-                  name="payment"
-                  value="cod"
-                  checked={paymentMethod === "cod"}
-                  onChange={() => setPaymentMethod("cod")}
-                  className="mr-2"
-                />
-                <span className="font-medium">Cash on Delivery</span>
-                <div className="text-sm text-gray-500 mt-1">Pay when courier delivers the order</div>
-              </label>
-
-              <label className={`p-3 border rounded-lg cursor-pointer transition ${paymentMethod === "mobile" ? "border-blue-500 bg-blue-50" : "hover:border-gray-300"}`}>
-                <input
-                  type="radio"
-                  name="payment"
-                  value="mobile"
-                  checked={paymentMethod === "mobile"}
-                  onChange={() => setPaymentMethod("mobile")}
-                  className="mr-2"
-                />
-                <span className="font-medium">Mobile Banking (bKash / Rocket / Nagad)</span>
-                <div className="text-sm text-gray-500 mt-1">After payment, enter transaction ID to confirm</div>
-              </label>
-            </div>
-          </div>
-
-          {/* Order note / summary small */}
-          <div className="mb-6 bg-gray-50 p-4 rounded border border-gray-100 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Products</span>
-              <span className="font-medium">৳{getTotal().toFixed(2)}</span>
-            </div>
-            <div className="text-gray-500 text-xs mt-2">
-              Delivery charge calculated at checkout. You will receive an SMS/Email with order details.
-            </div>
-          </div>
-
-          {error && <div className="text-red-600 mb-2">{error}</div>}
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            {paymentMethod === "cod" ? (
-              <button
-                type="submit"
-                disabled={processing}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
-              >
-                {processing ? "Placing order..." : "Place Order (COD)"}
-              </button>
-            ) : (
-              <button
-                onClick={openMobileModal}
-                className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:opacity-95 transition font-medium"
-              >
-                {mobileProcessing ? "Processing..." : "Pay with Mobile Banking"}
-              </button>
-            )}
-
-            <button
-              type="button"
-              className="text-gray-700 border px-4 py-2 rounded-lg"
-              onClick={() => navigate(-1)}
-            >
-              Back
-            </button>
-          </div>
-        </form>
-
-        {/* RIGHT: ORDER SUMMARY */}
-        <aside className="bg-white rounded-xl shadow p-6 border border-gray-100 h-fit">
-          <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
-
-          <div className="space-y-3">
-            {cartItems.map((it) => (
-              <div key={it.id} className="flex items-center gap-3">
-                <img src={it.image} alt={it.name} className="w-14 h-14 object-contain rounded" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-800">{it.name}</div>
-                  <div className="text-xs text-gray-500">x{it.quantity || 1}</div>
-                </div>
-                <div className="text-sm font-semibold text-blue-600">৳{(it.price * (it.quantity || 1)).toFixed(2)}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="border-t my-4"></div>
-
-          <div className="flex justify-between text-gray-700 mb-2">
-            <span>Subtotal</span>
-            <span>৳{getTotal().toFixed(2)}</span>
-          </div>
-
-          <div className="flex justify-between text-gray-700 mb-4">
-            <span>Delivery</span>
-            <span className="text-green-600 font-medium">৳ 59</span>
-          </div>
-
-          <div className="flex justify-between text-lg font-semibold text-gray-900 mb-2">
-            <span>Total</span>
-            <span>৳{(getTotal() + 59).toFixed(2)}</span>
-          </div>
-
-          <div className="text-xs text-gray-500 mt-2">
-            By placing an order you agree to our <span className="underline">Terms & Conditions</span>.
-          </div>
-        </aside>
-      </div>
-
-      {/* Mobile Payment Modal */}
-      {showMobileModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg">
-            <h3 className="text-xl font-semibold mb-3">Mobile Banking Payment</h3>
+        {/* Address */}
+        {step === 0 && (
+          <>
+            <h2 className="text-2xl font-semibold mb-2">Shipping Information</h2>
             <p className="text-sm text-gray-600 mb-4">
-              Send the total amount to our merchant number by bKash / Rocket / Nagad. Then enter sender number and transaction ID below.
+              Fill required fields to continue.
             </p>
 
-            <form onSubmit={handleMobilePaymentSubmit}>
-              <label className="block mb-3">
-                <span className="text-sm font-medium text-gray-700">Sender phone (used for verification)</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">
+                  Full name *
+                </span>
                 <input
-                  value={mobilePhone}
-                  onChange={(e) => setMobilePhone(e.target.value)}
-                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  placeholder="01XXXXXXXXX"
+                  value={address.name}
+                  onChange={(e) =>
+                    setAddress({ ...address, name: e.target.value })
+                  }
+                  className="mt-1 w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-200"
                 />
               </label>
 
-              <label className="block mb-3">
-                <span className="text-sm font-medium text-gray-700">Transaction ID</span>
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">
+                  Phone *
+                </span>
                 <input
-                  value={txId}
-                  onChange={(e) => setTxId(e.target.value)}
-                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  placeholder="e.g. TX12345678"
+                  value={address.phone}
+                  onChange={(e) =>
+                    setAddress({ ...address, phone: e.target.value })
+                  }
+                  className="mt-1 w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-200"
                 />
               </label>
 
-              {mobileError && <div className="text-red-600 mb-2">{mobileError}</div>}
+              <label className="md:col-span-2 block">
+                <span className="text-sm font-medium text-gray-700">
+                  Address *
+                </span>
+                <textarea
+                  value={address.addressLine}
+                  onChange={(e) =>
+                    setAddress({ ...address, addressLine: e.target.value })
+                  }
+                  className="mt-1 w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-200"
+                  rows="3"
+                />
+              </label>
 
-              <div className="flex gap-3 justify-end mt-4">
-                <button type="button" onClick={() => setShowMobileModal(false)} className="px-4 py-2 rounded border">Cancel</button>
+              <label>
+                <span className="text-sm font-medium text-gray-700">
+                  City *
+                </span>
+                <input
+                  value={address.city}
+                  onChange={(e) =>
+                    setAddress({ ...address, city: e.target.value })
+                  }
+                  className="mt-1 w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-200"
+                />
+              </label>
+
+              <label>
+                <span className="text-sm font-medium text-gray-700">
+                  Postal *
+                </span>
+                <input
+                  value={address.postal}
+                  onChange={(e) =>
+                    setAddress({ ...address, postal: e.target.value })
+                  }
+                  className="mt-1 w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-200"
+                />
+              </label>
+            </div>
+
+            {error && <div className="mt-4 text-sm text-red-600">{error}</div>}
+
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                onClick={goNext}
+                className="px-5 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700"
+              >
+                Continue to payment
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Payment */}
+        {step === 1 && (
+          <div className="w-full">
+            <h2 className="text-2xl font-semibold mb-1">Payment Method</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              {/* COD */}
+              <label
+                className={`p-4 rounded-xl border cursor-pointer transition ${
+                  paymentMethod === "cod"
+                    ? "border-blue-600 bg-blue-50"
+                    : "hover:border-gray-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  checked={paymentMethod === "cod"}
+                  onChange={() => setPaymentMethod("cod")}
+                />
+                <span className="ml-2 font-medium">Cash on Delivery</span>
+              </label>
+
+              {/* bKash */}
+              <label
+                className={`p-4 rounded-xl border cursor-pointer transition ${
+                  paymentMethod === "bkash"
+                    ? "border-pink-600 bg-pink-50"
+                    : "hover:border-gray-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  checked={paymentMethod === "bkash"}
+                  onChange={() => setPaymentMethod("bkash")}
+                />
+                <span className="ml-2 font-medium">bKash</span>
+              </label>
+
+              {/* Nagad */}
+              <label
+                className={`p-4 rounded-xl border cursor-pointer transition ${
+                  paymentMethod === "nagad"
+                    ? "border-orange-600 bg-orange-50"
+                    : "hover:border-gray-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  checked={paymentMethod === "nagad"}
+                  onChange={() => setPaymentMethod("nagad")}
+                />
+                <span className="ml-2 font-medium">Nagad</span>
+              </label>
+
+              {/* Rocket */}
+              <label
+                className={`p-4 rounded-xl border cursor-pointer transition ${
+                  paymentMethod === "rocket"
+                    ? "border-purple-600 bg-purple-50"
+                    : "hover:border-gray-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  checked={paymentMethod === "rocket"}
+                  onChange={() => setPaymentMethod("rocket")}
+                />
+                <span className="ml-2 font-medium">Rocket</span>
+              </label>
+            </div>
+
+            {error && <p className="text-red-600 mt-3">{error}</p>}
+
+            <div className="mt-8 flex justify-between">
+              <button
+                onClick={() => setStep(0)}
+                className="px-4 py-2 border rounded-md hover:bg-gray-50"
+              >
+                Back
+              </button>
+
+              {paymentMethod === "cod" ? (
                 <button
-                  type="submit"
-                  disabled={mobileProcessing}
-                  className="px-5 py-2 rounded bg-gradient-to-r from-green-500 to-blue-600 text-white font-medium"
+                  onClick={handlePlaceOrderCOD}
+                  disabled={loading}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {mobileProcessing ? "Verifying..." : "Submit Transaction"}
+                  {loading ? "Placing..." : "Place Order (COD)"}
                 </button>
-              </div>
-            </form>
-
-            <div className="mt-4 text-xs text-gray-500">
-              Tip: Use a mock transaction id like <span className="font-mono">TX123456</span> for demo/testing.
+              ) : (
+                <button
+                  onClick={handleProceedToProvider}
+                  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                >
+                  Proceed to Payment
+                </button>
+              )}
             </div>
           </div>
+        )}
+      </main>
+
+      <div className="lg:col-span-1">
+        <div className="sticky top-6">
+          <OrderSummary showTitle={false} />
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 };
 
 export default Checkout;
-

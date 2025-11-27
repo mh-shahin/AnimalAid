@@ -49,12 +49,27 @@ def medicines_view(request):
             return Response({'error': 'Medicine not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH', 'PUT'])  # ✅ ADDED PATCH HERE
 def get_medicines_by_id(request, pk):
     try:
         medicine = Medicine.objects.get(pk=pk)
     except Medicine.DoesNotExist:
         return Response({'error': 'Medicine not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = MedicineSerializer(medicine, context={'request': request})
-    return Response(serializer.data)
+    if request.method == 'GET':
+        serializer = MedicineSerializer(medicine, context={'request': request})
+        return Response(serializer.data)
+    
+    elif request.method == 'PATCH':  # ✅ ADDED PATCH SUPPORT
+        serializer = MedicineSerializer(medicine, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'PUT':  # ✅ ADDED PUT SUPPORT
+        serializer = MedicineSerializer(medicine, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

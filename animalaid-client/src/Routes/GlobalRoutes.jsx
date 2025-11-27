@@ -20,8 +20,12 @@ import DashboardAdmin from "../Componets/Admin/DashboardAdmin";
 import MedicineDetailsPage from "../Componets/Pages/DetailsPages/MedicineDetailsPages/MedicineDetailsPage";
 import FeedDetailsPage from "../Componets/Pages/DetailsPages/FeedDetailsPages/FeedDetailsPage";
 import Cart from "../Componets/Shared/ProductCard/Cart";
-import Checkout from "../Componets/Pages/ProductList/CheckOut";
+import Checkout from "../Componets/Pages/ProductList/Checkout.jsx";
 import PaymentSuccess from "../Componets/Pages/ProductList/PaymentSuccess";
+import PaymentGateway from "../Componets/Pages/ProductList/PaymentFunction/PaymentGateway";
+import PaymentReturn from "../Componets/Pages/ProductList/PaymentFunction/PaymentReturn";
+import OrderSummary from "../Componets/Pages/ProductList/PaymentFunction/OrderSummary";
+import UserBlogPage from "../Componets/Pages/blogsPage/UserBlogPage.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -57,6 +61,10 @@ export const router = createBrowserRouter([
                 element: <Feed></Feed>
             },
             {
+                path: "/blogs",
+                element: <UserBlogPage></UserBlogPage>
+            },
+            {
                 path: "/feed/:id",
                 element: <FeedDetailsPage></FeedDetailsPage>
             },
@@ -73,8 +81,20 @@ export const router = createBrowserRouter([
                 element: <Checkout></Checkout>
             },
             {
+                path: "/payment/:provider",
+                element: <PaymentGateway></PaymentGateway>
+            },
+            {
+                path: "/payment/return",
+                element: <PaymentReturn></PaymentReturn>
+            },
+            {
                 path: "/checkout/success",
                 element: <PaymentSuccess></PaymentSuccess>
+            },
+            {
+                path: "/orders",
+                element: <OrderSummary></OrderSummary>
             }
 
         ]
