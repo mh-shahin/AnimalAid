@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Order, OrderItem, ShippingAddress, Payment, OrderStatusHistory
 from django.db import transaction
+from stocks.models import StockSale
 import requests
 
 User = get_user_model()
@@ -89,7 +90,7 @@ class CreateOrderItemSerializer(serializers.Serializer):
     product = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
     product_type = serializers.ChoiceField(
-        choices=['medicine', 'feed'], 
+        choices=['medicin', 'feed'], 
         required=True
     )
 
@@ -117,7 +118,7 @@ class CreateOrderSerializer(serializers.Serializer):
         """Generate the correct API URL based on product type"""
         product_type = product_type.lower()
         
-        if product_type == 'medicine':
+        if product_type == 'medicin':
             return f"http://localhost:8000/medicines/{product_id}/"
         elif product_type == 'feed':
             return f"http://localhost:8000/feeds/{product_id}/"
@@ -247,7 +248,7 @@ class CreateOrderSerializer(serializers.Serializer):
             self.validate_stock(product, quantity)
             
             # Create order item
-            OrderItem.objects.create(
+            order_item = OrderItem.objects.create(  # ✅ CHANGED: Store in variable
                 order=order,
                 product_id=product_id,
                 product_type=product_type,
@@ -259,11 +260,23 @@ class CreateOrderSerializer(serializers.Serializer):
                 quantity=int(quantity)
             )
             
+            # ✅ NEW: Record sale in stock management
+            StockSale.objects.create(
+                order_id=order.order_id,
+                product_id=product_id,
+                product_type=product_type,
+                product_name=product.get('name', ''),
+                quantity_sold=int(quantity),
+                unit_price=float(product.get('price', 0)),
+                total_revenue=order_item.subtotal,
+                customer_id=user.id
+            )
+            
             # Update product stock
             current_stock = int(product['piece'])
             new_stock = current_stock - int(quantity)
             self.update_product_stock(product_id, new_stock, product_type)
-        
+                
         # Create payment record
         payment_method = payment_data.get('method', 'cod')
         payment_provider = payment_data.get('provider', '')

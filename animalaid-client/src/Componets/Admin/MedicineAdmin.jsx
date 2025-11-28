@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Plus, X, Info, Check } from 'lucide-react';
+import { Search, Edit, Trash2, Plus, X, Info, Check, Package2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import StockUpdateModal from '../Admin/StockUpdateModal';
 
 const MedicineAdmin = () => {
 
     const [formData, setFormData] = useState({
-        name: '', quantity: '',piece: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', generic_name: '', image: null
+        name: '', quantity: '', piece: '', unit: '', category: '', price: '', offer: '', brand: '', description: '', generic_name: '', image: null
     });
 
     const [medicines, setMedicines] = useState([]);
@@ -14,26 +15,30 @@ const MedicineAdmin = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+    const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const unitOptions = ['mg', 'g', 'kg', 'ml', 'L', 'tablet', 'capsule'];
     const categoryOptions = ['Antibiotic', 'Analgesic', 'Antiviral', 'Antifungal', 'Nutritional Supplement', 'Vitamin', 'Antihistamine', 'Antiseptic'];
-    const genericNameOptions = ["Amoxicillin","Enrofloxacin","Ivermectin","Vitamin B Complex","Tylosin","Doxycycline","Albendazole","Paracetamol","Ciprofloxacin","Oxytetracycline Dihydrate"];
+    const genericNameOptions = ["Amoxicillin", "Enrofloxacin", "Ivermectin", "Vitamin B Complex", "Tylosin", "Doxycycline", "Albendazole", "Paracetamol", "Ciprofloxacin", "Oxytetracycline Dihydrate"];
 
 
+
+    const fetchMedicines = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/medicines/');
+            if (!response.ok) {
+                throw new Error('Failed to fetch medicines');
+            }
+            const data = await response.json();
+            setMedicines(data);
+        } catch (error) {
+            console.error('Error fetching medicines:', error);
+            toast.error('Failed to fetch medicines');
+        }
+    };
 
     useEffect(() => {
-        const fetchMedicines = async () => {
-            try {
-                const response = await fetch('http://localhost:8000/medicines/');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch medicines');
-                }
-                const data = await response.json();
-                setMedicines(data);
-            } catch (error) {
-                console.error('Error fetching medicines:', error);
-            }
-        };
         fetchMedicines();
     }, []);
 
@@ -44,6 +49,16 @@ const MedicineAdmin = () => {
         if (e.target.files && e.target.files[0]) {
             setFormData({ ...formData, image: e.target.files[0] });
         }
+    };
+
+    const handleStockUpdate = (medicine) => {
+        setSelectedProduct(medicine);
+        setIsStockModalOpen(true);
+    };
+
+    const handleStockUpdateSuccess = () => {
+        fetchMedicines(); // Refresh the list
+        toast.success('✅ Stock updated successfully.');
     };
 
     const showNotification = (message, type = 'success') => {
@@ -301,7 +316,7 @@ const MedicineAdmin = () => {
 
                             <div className="form-group">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                   Medicine Generic Name*
+                                    Medicine Generic Name*
                                 </label>
                                 <select
                                     name="generic_name"
@@ -463,6 +478,14 @@ const MedicineAdmin = () => {
                                         </div>
                                         <div className="flex space-x-2">
                                             <button
+                                                onClick={() => handleStockUpdate(medicine)}
+                                                className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors duration-200"
+                                                aria-label="Update stock"
+                                                title="Update Stock"
+                                            >
+                                                <Package2 size={18} />
+                                            </button>
+                                            <button
                                                 onClick={() => handleEdit(medicine)}
                                                 className="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors duration-200"
                                                 aria-label="Edit medicine"
@@ -484,6 +507,13 @@ const MedicineAdmin = () => {
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </button>
+                                            <StockUpdateModal
+                                                isOpen={isStockModalOpen}
+                                                onClose={() => setIsStockModalOpen(false)}
+                                                product={selectedProduct}
+                                                productType="medicine"
+                                                onSuccess={handleStockUpdateSuccess}
+                                            />
                                         </div>
                                     </div>
                                 </div>

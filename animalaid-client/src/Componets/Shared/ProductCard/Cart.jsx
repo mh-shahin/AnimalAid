@@ -8,73 +8,73 @@ const Cart = () => {
   const navigate = useNavigate();
 
   if (!cartItems.length) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 px-6 bg-gradient-to-b from-blue-50 to-white rounded-xl shadow-inner">
-      
-      <h2 className="text-3xl font-bold text-gray-800 mb-8 tracking-wide">
-        Your Cart is Empty
-      </h2>
-      {/* Floating Animation Cart Icon */}
-      <div className="p-6 bg-white shadow-lg rounded-full relative">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-28 w-28 text-blue-500 animate-bounce-slow"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437m0 0h14.007c.78 
+    return (
+      <div className="flex flex-col items-center justify-center py-24 px-6 bg-gradient-to-b from-blue-50 to-white rounded-xl shadow-inner">
+
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 tracking-wide">
+          Your Cart is Empty
+        </h2>
+        {/* Floating Animation Cart Icon */}
+        <div className="p-6 bg-white shadow-lg rounded-full relative">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-28 w-28 text-blue-500 animate-bounce-slow"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437m0 0h14.007c.78 
             0 1.318.78 1.08 1.518l-1.602 4.807a1.125 
             1.125 0 01-1.08.757H7.527m-2.421-6.082L7.527 
             12.75m0 0l1.125 4.5m-1.125-4.5h11.25m-9 
             4.5a1.125 1.125 0 11-2.25 0m2.25 0a1.125 
             1.125 0 11-2.25 0m12 0a1.125 1.125 0 
             11-2.25 0m2.25 0a1.125 1.125 0 11-2.25 0"
-          />
-        </svg>
+            />
+          </svg>
 
-        {/* Soft Glow */}
-        <div className="absolute inset-0 bg-blue-300 blur-3xl opacity-20 rounded-full"></div>
-      </div>
+          {/* Soft Glow */}
+          <div className="absolute inset-0 bg-blue-300 blur-3xl opacity-20 rounded-full"></div>
+        </div>
 
-      <h2 className="text-3xl font-bold text-gray-800 mt-8 tracking-wide">
-        Your Cart is Feeling Light 🎒
-      </h2>
+        <h2 className="text-3xl font-bold text-gray-800 mt-8 tracking-wide">
+          Your Cart is Feeling Light 🎒
+        </h2>
 
-      <p className="text-gray-600 mt-3 text-center max-w-md">
-        Looks like you haven’t added anything yet.  
-        Browse our medicines & feed to keep your animals healthy and active!
-      </p>
+        <p className="text-gray-600 mt-3 text-center max-w-md">
+          Looks like you haven’t added anything yet.
+          Browse our medicines & feed to keep your animals healthy and active!
+        </p>
 
-      {/* Recommended Category Buttons */}
-      <div className="flex gap-4 mt-8">
-        <Link
-          to="/medicin"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1"
-        >
-          Explore Medicines
-        </Link>
+        {/* Recommended Category Buttons */}
+        <div className="flex gap-4 mt-8">
+          <Link
+            to="/medicin"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1"
+          >
+            Explore Medicines
+          </Link>
 
-        <Link
-          to="/feed"
-          className="px-6 py-3 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition transform hover:-translate-y-1"
-        >
-          Explore Feed
-        </Link>
-      </div>
+          <Link
+            to="/feed"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition transform hover:-translate-y-1"
+          >
+            Explore Feed
+          </Link>
+        </div>
 
-      {/* Encouragement message */}
-      <div className="mt-10 text-sm text-gray-500 italic">
-        Your animals deserve the best care ❤️
-      </div>
+        {/* Encouragement message */}
+        <div className="mt-10 text-sm text-gray-500 italic">
+          Your animals deserve the best care ❤️
+        </div>
 
-      {/* Custom bounce animation */}
-      <style>
-        {`
+        {/* Custom bounce animation */}
+        <style>
+          {`
         @keyframes bounce-slow {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
@@ -83,10 +83,10 @@ const Cart = () => {
           animation: bounce-slow 3s infinite;
         }
         `}
-      </style>
-    </div>
-  );
-}
+        </style>
+      </div>
+    );
+  }
 
 
   return (
@@ -126,10 +126,9 @@ const Cart = () => {
                 {/* Quantity Control */}
                 <div className="flex items-center gap-2 mb-2">
                   <button
-                    onClick={() =>
-                      updateQuantity(item.id, Math.max(1, (item.quantity || 1) - 1))
-                    }
-                    className="border p-1 rounded hover:bg-gray-100"
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="border p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={item.quantity <= 1}
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -139,13 +138,20 @@ const Cart = () => {
                   </span>
 
                   <button
-                    onClick={() =>
-                      updateQuantity(item.id, (item.quantity || 1) + 1)
-                    }
-                    className="border p-1 rounded hover:bg-gray-100"
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className={`border p-1 rounded transition ${item.quantity >= (item.maxStock || item.piece)
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'hover:bg-gray-100'
+                      }`}
+                    disabled={item.quantity >= (item.maxStock || item.piece)}
                   >
                     <Plus className="w-4 h-4" />
                   </button>
+
+                  {/* Show stock limit */}
+                  <span className="text-xs text-gray-500">
+                    (Max: {item.maxStock || item.piece})
+                  </span>
                 </div>
 
                 {/* Item Total */}

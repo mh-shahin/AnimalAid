@@ -48,9 +48,9 @@ const Checkout = () => {
   const mapCartItemsToOrderItems = () => {
     return cartItems.map((item) => {
       // Try multiple possible field names for product type
-      const productType = 
-        item.product_type || 
-        item.type || 
+      const productType =
+        item.product_type ||
+        item.type ||
         item.productType ||
         (item.category && item.category.toLowerCase()) ||
         "medicine"; // Last resort default
@@ -63,11 +63,34 @@ const Checkout = () => {
     });
   };
 
+  const validateStockBeforeOrder = () => {
+    for (const item of cartItems) {
+      const maxStock = item.maxStock || item.piece || 0;
+
+      if (item.quantity > maxStock) {
+        setError(`${item.name} only has ${maxStock} units in stock. Please update your cart.`);
+        return false;
+      }
+
+      if (maxStock <= 0) {
+        setError(`${item.name} is out of stock. Please remove it from cart.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handlePlaceOrderCOD = async () => {
     if (!requiredFilled()) {
       setError("Please fill required fields.");
       return;
     }
+
+    // Validate stock before order
+    if (!validateStockBeforeOrder()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -78,7 +101,7 @@ const Checkout = () => {
       const hasInvalidTypes = items.some(
         item => !["medicine", "feed"].includes(item.product_type)
       );
-      
+
       if (hasInvalidTypes) {
         console.warn("⚠️ Some items have invalid product_type:", items);
       }
@@ -122,7 +145,7 @@ const Checkout = () => {
         // Clear cart
         clearCart();
         localStorage.removeItem('animalaid_cart');
-                
+
         // Navigate to success page
         setTimeout(() => {
           navigate("/checkout/success", {
@@ -155,6 +178,9 @@ const Checkout = () => {
     }
     if (!paymentMethod) {
       setError("Please choose a payment provider.");
+      return;
+    }
+    if (!validateStockBeforeOrder()) {
       return;
     }
 
@@ -293,11 +319,10 @@ const Checkout = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               {/* COD */}
               <label
-                className={`p-4 rounded-xl border cursor-pointer transition ${
-                  paymentMethod === "cod"
-                    ? "border-blue-600 bg-blue-50"
-                    : "hover:border-gray-300"
-                }`}
+                className={`p-4 rounded-xl border cursor-pointer transition ${paymentMethod === "cod"
+                  ? "border-blue-600 bg-blue-50"
+                  : "hover:border-gray-300"
+                  }`}
               >
                 <input
                   type="radio"
@@ -309,11 +334,10 @@ const Checkout = () => {
 
               {/* bKash */}
               <label
-                className={`p-4 rounded-xl border cursor-pointer transition ${
-                  paymentMethod === "bkash"
-                    ? "border-pink-600 bg-pink-50"
-                    : "hover:border-gray-300"
-                }`}
+                className={`p-4 rounded-xl border cursor-pointer transition ${paymentMethod === "bkash"
+                  ? "border-pink-600 bg-pink-50"
+                  : "hover:border-gray-300"
+                  }`}
               >
                 <input
                   type="radio"
@@ -325,11 +349,10 @@ const Checkout = () => {
 
               {/* Nagad */}
               <label
-                className={`p-4 rounded-xl border cursor-pointer transition ${
-                  paymentMethod === "nagad"
-                    ? "border-orange-600 bg-orange-50"
-                    : "hover:border-gray-300"
-                }`}
+                className={`p-4 rounded-xl border cursor-pointer transition ${paymentMethod === "nagad"
+                  ? "border-orange-600 bg-orange-50"
+                  : "hover:border-gray-300"
+                  }`}
               >
                 <input
                   type="radio"
@@ -341,11 +364,10 @@ const Checkout = () => {
 
               {/* Rocket */}
               <label
-                className={`p-4 rounded-xl border cursor-pointer transition ${
-                  paymentMethod === "rocket"
-                    ? "border-purple-600 bg-purple-50"
-                    : "hover:border-gray-300"
-                }`}
+                className={`p-4 rounded-xl border cursor-pointer transition ${paymentMethod === "rocket"
+                  ? "border-purple-600 bg-purple-50"
+                  : "hover:border-gray-300"
+                  }`}
               >
                 <input
                   type="radio"

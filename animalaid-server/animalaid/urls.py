@@ -13,6 +13,7 @@ urlpatterns = [
     path('reviews/', include('reviews.urls')),  # include reviews app
     path('consultant/', include('consultant.urls')),  # include consultant app
     path('api/blogs/', include('blogs.urls')),  # include blogs app
+    path('api/stocks/', include('stocks.urls')),  # include stocks app
 ]
 
 if settings.DEBUG:

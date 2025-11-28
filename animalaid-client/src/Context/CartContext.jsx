@@ -34,18 +34,33 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
-      
+
+      // NEW: Stock validation
+      const maxStock = product.maxStock || product.piece || 0;
+
       if (existingItem) {
-        // Update quantity if item already exists
+        const newQuantity = existingItem.quantity + quantity;
+
+        // NEW: Prevent exceeding stock
+        if (newQuantity > maxStock) {
+          alert(`Cannot add more! Maximum available stock is ${maxStock} units.`);
+          return prevItems;
+        }
+
         return prevItems.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: newQuantity }
             : item
         );
-      } else {
-        // Add new item
-        return [...prevItems, { ...product, quantity }];
       }
+
+      // NEW: Check stock for new item
+      if (quantity > maxStock) {
+        alert(`Cannot add ${quantity} units! Only ${maxStock} available in stock.`);
+        return prevItems;
+      }
+
+      return [...prevItems, { ...product, quantity }];
     });
   };
 
@@ -53,17 +68,29 @@ export const CartProvider = ({ children }) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
 
-  const updateQuantity = (productId, quantity) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      )
-    );
+  // Add updateQuantity function with stock validation
+  const updateQuantity = (productId, newQuantity) => {
+    setCartItems(prevItems => {
+      return prevItems.map(item => {
+        if (item.id === productId) {
+          const maxStock = item.maxStock || item.piece || 0;
+
+          // Prevent exceeding stock
+          if (newQuantity > maxStock) {
+            alert(`Maximum available stock is ${maxStock} units!`);
+            return item;
+          }
+
+          // Remove item if quantity is 0 or less
+          if (newQuantity <= 0) {
+            return null;
+          }
+
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      }).filter(Boolean); // Remove null items
+    });
   };
 
   const clearCart = () => {

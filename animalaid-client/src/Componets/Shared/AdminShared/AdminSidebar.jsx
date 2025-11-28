@@ -11,6 +11,7 @@ const AdminSidebar = memo(({ collapsed, toggleSidebar, mobileMenuOpen }) => {
         { to: '/admin/adminfeed', icon: <ShoppingBag size={20} />, label: 'Feed' },
         { to: '/admin/adminconsultation', icon: <MessageCircle size={20} />, label: 'Consultation' },
         { to: '/admin/adminblog', icon: <FileText size={20} />, label: 'Blog' },
+        { to: '/admin/stockupdate', icon: <ShoppingBag size={20} />, label: 'Stock Update' },
     ];
 
     return (

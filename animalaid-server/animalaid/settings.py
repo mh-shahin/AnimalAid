@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'orders',
     'accounts',
     'blogs',
+    'stocks',
 ]
 
 # media url

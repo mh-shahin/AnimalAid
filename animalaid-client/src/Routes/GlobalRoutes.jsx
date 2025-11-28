@@ -26,6 +26,7 @@ import PaymentGateway from "../Componets/Pages/ProductList/PaymentFunction/Payme
 import PaymentReturn from "../Componets/Pages/ProductList/PaymentFunction/PaymentReturn";
 import OrderSummary from "../Componets/Pages/ProductList/PaymentFunction/OrderSummary";
 import UserBlogPage from "../Componets/Pages/blogsPage/UserBlogPage.jsx";
+import StockManagement from "../Componets/Admin/StockManagement.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -135,6 +136,10 @@ export const router = createBrowserRouter([
             {
                 path: "admindashboard",
                 element: <DashboardAdmin></DashboardAdmin>
+            },
+            {
+                path: "stockupdate",
+                element: <StockManagement></StockManagement>
             }
 
         ]
