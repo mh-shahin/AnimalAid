@@ -1,11 +1,5 @@
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9#1+smtr6l_i-4@^5thp%l6+equ9ops8n1$j0u$z((y$el)n4m'
-
 # from decouple import config
 import os
 
@@ -18,6 +12,14 @@ from dotenv import load_dotenv
 # load .env
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+STATIC_ADMIN_EMAIL = os.getenv("STATIC_ADMIN_EMAIL")
+STATIC_ADMIN_PASSWORD = os.getenv("STATIC_ADMIN_PASSWORD")
 
 HF_API_TOKEN = os.getenv('HF_API_TOKEN')
 HF_MODEL_ID  = os.getenv('HF_MODEL_ID')
@@ -126,13 +128,14 @@ WSGI_APPLICATION = 'animalaid.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'animalaid_db',         # your created DB name
-        'USER': 'postgres',          # your DB user (default: postgres)
-        'PASSWORD': 'Ss150011sS', # the password you set
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
     }
 }
+
 
 
 
