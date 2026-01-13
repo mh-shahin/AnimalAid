@@ -106,7 +106,7 @@ const Feed = () => {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white shadow-lg -mt-6 mx-4 sm:mx-6 lg:mx-8 max-w-7xl lg:mx-auto rounded-xl">
+            <div className="bg-white shadow-lg -mt-6 mx-4 sm:mx-6 max-w-7xl lg:mx-auto rounded-xl">
                 <div className="p-6">
                     <div className="flex items-center justify-end gap-3">
                         {activeFiltersCount > 0 && (

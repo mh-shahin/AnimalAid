@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../../Context/CartContext.jsx';
+import { isAuthenticated } from '../../../Authentication/auth.js';
+import toast from 'react-hot-toast';
 import { CheckCircle } from 'lucide-react';
+
+
 
 const fallbackImage = '/fallback-medicine.jpg';
 
@@ -11,6 +15,7 @@ const ProductFeedCard = ({ product, type = 'feed' }) => {
     const [added, setAdded] = useState(false);
     const [stockError, setStockError] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
     const { addToCart, cartItems } = useCart();
 
     // Check stock availability
@@ -29,6 +34,12 @@ const ProductFeedCard = ({ product, type = 'feed' }) => {
     };
 
     const handleAddToCart = () => {
+
+        if (!isAuthenticated()) {
+            toast.error('Please login to add items to cart');
+            navigate('/login', { state: { from: location.pathname } });
+            return;
+        }
 
         // Check if out of stock
         if (isOutOfStock) {
@@ -55,6 +66,15 @@ const ProductFeedCard = ({ product, type = 'feed' }) => {
         setAdded(true);
         setStockError('');
         setTimeout(() => setAdded(false), 1500);
+    };
+
+    // 🔥 NEW: Handle details click
+    const handleDetailsClick = (e) => {
+        if (!isAuthenticated()) {
+            e.preventDefault();
+            toast.error('Please login to view product details');
+            navigate('/login', { state: { from: `/${type}/${product.id}` } });
+        }
     };
 
     return (
@@ -127,6 +147,7 @@ const ProductFeedCard = ({ product, type = 'feed' }) => {
 
                     <Link
                         to={`/${type}/${product.id}`}
+                        onClick={handleDetailsClick}
                         className="flex-1 border border-blue-600 text-blue-600 text-xs text-center py-2 px-3 rounded-md hover:bg-blue-50 transition-colors font-medium"
                     >
                         Details

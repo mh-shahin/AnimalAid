@@ -27,6 +27,8 @@ import PaymentReturn from "../Componets/Pages/ProductList/PaymentFunction/Paymen
 import OrderSummary from "../Componets/Pages/ProductList/PaymentFunction/OrderSummary";
 import UserBlogPage from "../Componets/Pages/blogsPage/UserBlogPage.jsx";
 import StockManagement from "../Componets/Admin/StockManagement.jsx";
+import ProtectedRoute from "../Componets/ProtectedRoute.jsx";
+import AdminRoute from "../Componets/AdminRoute.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -34,114 +36,152 @@ export const router = createBrowserRouter([
         element: <Main />,
         children: [
             {
-                index: true, // same as path: "/" but cleaner
+                index: true,
                 element: <HomePage />
             },
             {
                 path: "/medicin",
-                element: <Medicin></Medicin>
+                element: <Medicin />
             },
             {
+                // PROTECTED: Medicine Details
                 path: "/medicin/:id",
-                element: <MedicineDetailsPage></MedicineDetailsPage>
+                element: (
+                    <ProtectedRoute>
+                        <MedicineDetailsPage />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "medicin/category/:categoryName",
-                element: <CategoryProductsPage></CategoryProductsPage>
+                element: <CategoryProductsPage />
             },
             {
+                // PROTECTED: Consultations
                 path: "/consultations",
-                element: <Consultants></Consultants>
+                element: <Consultants />
             },
             {
                 path: "/equipment",
-                element: <Equiepments></Equiepments>
+                element: <Equiepments />
             },
             {
                 path: "/feed",
-                element: <Feed></Feed>
+                element: <Feed />
             },
             {
                 path: "/blogs",
-                element: <UserBlogPage></UserBlogPage>
+                element: <UserBlogPage />
             },
             {
+                // PROTECTED: Feed Details
                 path: "/feed/:id",
-                element: <FeedDetailsPage></FeedDetailsPage>
+                element: (
+                    <ProtectedRoute>
+                        <FeedDetailsPage />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/feed/category/:categoryName",
-                element: <FeedCategoryProductsPage></FeedCategoryProductsPage>
+                element: <FeedCategoryProductsPage />
             },
             {
+                // PROTECTED: Cart
                 path: "/cart",
-                element: <Cart></Cart>
+                element: (
+                    <ProtectedRoute>
+                        <Cart />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/checkout",
-                element: <Checkout></Checkout>
+                element: (
+                    <ProtectedRoute>
+                        <Checkout />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/payment/:provider",
-                element: <PaymentGateway></PaymentGateway>
+                element: (
+                    <ProtectedRoute>
+                        <PaymentGateway />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/payment/return",
-                element: <PaymentReturn></PaymentReturn>
+                element: (
+                    <ProtectedRoute>
+                        <PaymentReturn />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/checkout/success",
-                element: <PaymentSuccess></PaymentSuccess>
+                element: (
+                    <ProtectedRoute>
+                        <PaymentSuccess />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/orders",
-                element: <OrderSummary></OrderSummary>
+                element: (
+                    <ProtectedRoute>
+                        <OrderSummary />
+                    </ProtectedRoute>
+                )
             }
-
         ]
     },
     {
         path: "/login",
-        element: <Login></Login>
+        element: <Login />
     },
     {
         path: "/signup",
-        element: <Signup></Signup>
+        element: <Signup />
     },
     {
+        // ADMIN PROTECTED: All admin routes
         path: "/admin",
-        element: <AdminLayout></AdminLayout>,
+        element: (
+            <AdminRoute>
+                <AdminLayout />
+            </AdminRoute>
+        ),
         children: [
             {
-                // path: "admindashboard",
                 index: true,
-                element: <DashboardAdmin></DashboardAdmin>
+                element: <DashboardAdmin />
             },
             {
                 path: "adminmedicine",
-                element: <MedicineAdmin></MedicineAdmin>
+                element: <MedicineAdmin />
             },
             {
                 path: "adminfeed",
-                element: <FeedAdmin></FeedAdmin>
+                element: <FeedAdmin />
             },
             {
                 path: "adminconsultation",
-                element: <ConsultationAdmin></ConsultationAdmin>
+                element: <ConsultationAdmin />
             },
             {
                 path: "adminblog",
-                element: <BlogsAdmin></BlogsAdmin>
+                element: <BlogsAdmin />
             },
             {
                 path: "admindashboard",
-                element: <DashboardAdmin></DashboardAdmin>
+                element: <DashboardAdmin />
             },
             {
                 path: "stockupdate",
-                element: <StockManagement></StockManagement>
+                element: <StockManagement />
             }
-
         ]
     }
 ]);

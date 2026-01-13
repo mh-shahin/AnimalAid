@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Plus, X, Image as ImageIcon } from 'lucide-react';
+import { Search, Edit, Trash2, Plus, X, Image as ImageIcon, Package2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import StockUpdateModal from '../Admin/StockUpdateModal';  // Add this import
 
 
 const FeedAdmin = () => {
@@ -13,35 +14,50 @@ const FeedAdmin = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+    
+    // Add these new state variables
+    const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const unitOptions = ['kg', 'packet', 'g', 'L', 'ml'];
     const animal_categoryOptions = ['Poultry', 'Fish', 'Cattle', 'Layer', 'Goat', 'Sheep', 'Cock', 'Duck'];
     const feed_typeOptions = ['Starter', 'Grower', 'Pellet', 'Finisher', 'Mash'];
 
 
+    // Modify fetchFeeds to be reusable
+    const fetchFeeds = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/feeds/');
+            if (!response.ok) throw new Error('Failed to fetch feeds');
+            const data = await response.json();
+            setFeeds(data);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to fetch feeds');
+        }
+    };
+
     useEffect(() => {
-        const fetchFeeds = async () => {
-            try {
-                const response = await fetch('http://localhost:8000/feeds/');
-                if (!response.ok) throw new Error('Failed to fetch feeds');
-                const data = await response.json();
-                setFeeds(data);
-            } catch (error) {
-                console.error(error);
-                toast.error('Failed to fetch feeds');
-            }
-        };
         fetchFeeds();
     }, []);
 
     const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-
-
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setFormData({ ...formData, image: e.target.files[0] });
         }
+    };
+
+    // Add these new handlers
+    const handleStockUpdate = (feed) => {
+        setSelectedProduct(feed);
+        setIsStockModalOpen(true);
+    };
+
+    const handleStockUpdateSuccess = () => {
+        fetchFeeds(); // Refresh the list
+        toast.success('✅ Stock updated successfully.');
     };
 
     const showNotification = (message, type = 'success') => {
@@ -50,77 +66,75 @@ const FeedAdmin = () => {
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    const form = new FormData();
-    form.append('name', formData.name);
-    form.append('brand', formData.brand);
-    form.append('quantity', formData.quantity);
-    form.append('unit', formData.unit);
-    form.append('animal_category', formData.animal_category);
-    form.append('price', formData.price);
-    form.append('discount', formData.discount);
-    form.append('feed_type', formData.feed_type);
-    form.append('description', formData.description);
-    form.append('piece', formData.piece || 0);  // Default value for piece
+        const form = new FormData();
+        form.append('name', formData.name);
+        form.append('brand', formData.brand);
+        form.append('quantity', formData.quantity);
+        form.append('unit', formData.unit);
+        form.append('animal_category', formData.animal_category);
+        form.append('price', formData.price);
+        form.append('discount', formData.discount);
+        form.append('feed_type', formData.feed_type);
+        form.append('description', formData.description);
+        form.append('piece', formData.piece || 0);
 
-    if (formData.image) {
-        form.append('image', formData.image);
-    }
-
-    if (editingId) {
-        form.append('id', editingId);
-    }
-
-    try {
-        const response = await fetch('http://localhost:8000/feeds/', {
-            method: editingId ? 'PUT' : 'POST',
-            body: form,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('Backend validation error:', data);
-            throw new Error('Failed to add/update feed');
+        if (formData.image) {
+            form.append('image', formData.image);
         }
 
         if (editingId) {
-            setFeeds(feeds.map(f => (f.id === editingId ? data : f)));
-        } else {
-            setFeeds([...feeds, data]);
+            form.append('id', editingId);
         }
 
-          Swal.fire({
-            title: editingId ? 'Feed Updated!' : 'Feed Added!',
-            text: `Feed "${formData.name}" has been ${editingId ? 'updated' : 'added'} successfully.`,
-            icon: 'success',
-            confirmButtonText: 'OK'
-        });
+        try {
+            const response = await fetch('http://localhost:8000/feeds/', {
+                method: editingId ? 'PUT' : 'POST',
+                body: form,
+            });
 
-        setIsFormVisible(false);
-        setEditingId(null);
-        setFormData({
-            name: '',
-            brand: '',
-            quantity: '',
-            unit: '',
-            animal_category: '',
-            price: '',
-            discount: '',
-            feed_type: '',
-            description: '',
-            piece: '',
-            image: null
-        });
+            const data = await response.json();
 
-    } catch (error) {
-        console.error('Error submitting feed', error);
-        toast.error('Failed to add/update feed');
-    }
-};
+            if (!response.ok) {
+                console.error('Backend validation error:', data);
+                throw new Error('Failed to add/update feed');
+            }
 
+            if (editingId) {
+                setFeeds(feeds.map(f => (f.id === editingId ? data : f)));
+            } else {
+                setFeeds([...feeds, data]);
+            }
 
+            Swal.fire({
+                title: editingId ? 'Feed Updated!' : 'Feed Added!',
+                text: `Feed "${formData.name}" has been ${editingId ? 'updated' : 'added'} successfully.`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+
+            setIsFormVisible(false);
+            setEditingId(null);
+            setFormData({
+                name: '',
+                brand: '',
+                quantity: '',
+                unit: '',
+                animal_category: '',
+                price: '',
+                discount: '',
+                feed_type: '',
+                description: '',
+                piece: '',
+                image: null
+            });
+
+        } catch (error) {
+            console.error('Error submitting feed', error);
+            toast.error('Failed to add/update feed');
+        }
+    };
 
     const handleEdit = (f) => {
         setFormData({
@@ -160,7 +174,6 @@ const FeedAdmin = () => {
             }
         }
     };
-
 
     const filteredFeeds = Array.isArray(feeds)
         ? feeds.filter((feed) =>
@@ -302,16 +315,16 @@ const FeedAdmin = () => {
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Added number of Bags</label>
-                                <input
-                                    type="number"
-                                    name="piece"
-                                    placeholder="Enter number of total bags"
-                                    value={formData.piece}
-                                    onChange={handleInputChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                            </div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Added number of Bags</label>
+                                    <input
+                                        type="number"
+                                        name="piece"
+                                        placeholder="Enter number of total bags"
+                                        value={formData.piece}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                </div>
 
                                 <div className="space-y-2 col-span-1 md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700">Description</label>
@@ -447,6 +460,15 @@ const FeedAdmin = () => {
                                             )}
                                         </div>
                                         <div className="flex space-x-2">
+                                            {/* Add Stock Update Button */}
+                                            <button
+                                                onClick={() => handleStockUpdate(feed)}
+                                                className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors duration-200"
+                                                aria-label="Update stock"
+                                                title="Update Stock"
+                                            >
+                                                <Package2 size={18} />
+                                            </button>
                                             <button
                                                 onClick={() => handleEdit(feed)}
                                                 className="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors duration-200"
@@ -458,7 +480,7 @@ const FeedAdmin = () => {
                                                 </svg>
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(feed.id)}
+                                                onClick={() => handleDelete(feed.id, feed.name)}
                                                 className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-200"
                                                 aria-label="Delete"
                                             >
@@ -477,9 +499,18 @@ const FeedAdmin = () => {
                     </div>
                 )}
 
+                {/* Add Stock Update Modal */}
+                <StockUpdateModal
+                    isOpen={isStockModalOpen}
+                    onClose={() => setIsStockModalOpen(false)}
+                    product={selectedProduct}
+                    productType="feed"
+                    onSuccess={handleStockUpdateSuccess}
+                />
+
                 {filteredFeeds.length > 0 && (
                     <div className="mt-6 text-center text-gray-500 text-sm">
-                        Showing {filteredFeeds.length} of {feeds.length} medicines
+                        Showing {filteredFeeds.length} of {feeds.length} feeds
                     </div>
                 )}
             </div>

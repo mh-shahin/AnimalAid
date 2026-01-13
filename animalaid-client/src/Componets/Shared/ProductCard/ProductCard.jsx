@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../../Context/CartContext.jsx';
 import { CheckCircle } from 'lucide-react';
+import { isAuthenticated } from '../../../Authentication/auth.js';
+import toast from 'react-hot-toast';
+
 
 const fallbackImage = '/fallback-medicine.jpg';
 
@@ -11,6 +14,7 @@ const ProductCard = ({ product, type = 'medicin' }) => {
     const [added, setAdded] = useState(false);
     const [stockError, setStockError] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
     const { addToCart, cartItems } = useCart();
 
 
@@ -30,6 +34,12 @@ const ProductCard = ({ product, type = 'medicin' }) => {
     };
 
     const handleAddToCart = () => {
+
+        if (!isAuthenticated()) {
+            toast.error('Please login to add items to cart');
+            navigate('/login', { state: { from: location.pathname } });
+            return;
+        }
 
         // Check if out of stock
         if (isOutOfStock) {
@@ -58,6 +68,15 @@ const ProductCard = ({ product, type = 'medicin' }) => {
         setAdded(true);
         setStockError('');
         setTimeout(() => setAdded(false), 1500);
+    };
+
+    // 🔥 NEW: Handle details click
+    const handleDetailsClick = (e) => {
+        if (!isAuthenticated()) {
+            e.preventDefault();
+            toast.error('Please login to view product details');
+            navigate('/login', { state: { from: `/${type}/${product.id}` } });
+        }
     };
 
     return (
@@ -118,19 +137,20 @@ const ProductCard = ({ product, type = 'medicin' }) => {
                 <div className="mt-4 flex gap-2">
                     <button
                         onClick={handleAddToCart}
-                        disabled={isOutOfStock} // NEW
+                        disabled={added || isOutOfStock} // NEW
                         className={`flex-1 text-xs py-2 px-3 rounded-md transition-colors font-medium ${isOutOfStock
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed" // NEW
-                                : added
-                                    ? "bg-green-600 text-white"
-                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed" // NEW
+                            : added
+                                ? "bg-green-600 text-white"
+                                : "bg-blue-600 text-white hover:bg-blue-700"
                             }`}
                     >
                         {isOutOfStock ? "Out of Stock" : added ? <span className="flex items-center justify-center gap-1"><CheckCircle className="w-4 h-4" /> Added</span> : "Add to Cart"}
                     </button>
-                    
+
                     <Link
                         to={`/${type}/${product.id}`}
+                        onClick={handleDetailsClick}
                         className="flex-1 border border-blue-600 text-blue-600 text-xs text-center py-2 px-3 rounded-md hover:bg-blue-50 transition-colors font-medium"
                     >
                         Details

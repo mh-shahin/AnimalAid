@@ -1,7 +1,6 @@
-// src/components/Login.jsx
 import { useState } from "react";
 import { Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import api from "../../../Authentication/api.js";
 import { saveAuth } from "../../../Authentication/auth.js";
 import toast from "react-hot-toast";
@@ -12,14 +11,17 @@ export default function Login() {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const validateEmail = (email) =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setErrors({ ...errors, [e.target.name]: "" });
+        setErrors({ ...errors, [e.target.name]: "", general: "" });
     };
+
+    const from = location.state?.from || '/';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,37 +33,51 @@ export default function Login() {
 
         if (!formData.password) newErrors.password = "Password is required";
 
-        if (Object.keys(newErrors).length) return setErrors(newErrors);
+        if (Object.keys(newErrors).length) {
+            setErrors(newErrors);
+            return;
+        }
 
         setLoading(true);
+        setErrors({}); // Clear previous errors
 
         try {
             const res = await api.post("/accounts/login/", formData);
             const data = res.data;
 
-            // Save tokens + role
+            console.log("✅ Login successful:", data);
+
+            // Save authentication
             saveAuth(data.access, data.refresh, data.role);
 
-            // Toast success message
-            toast.success("Login successful! Redirecting...");
+            // Show success message
+            toast.success("Login successful!");
 
-            // Redirect after short delay
-            setTimeout(() => {
-                if (data.role === "admin") navigate("/admin-dashboard");
-                else navigate("/");
-            }, 1000);
-
-        } catch (err) {
-            console.error(err);
-
-            if (err.response?.data?.detail) {
-                toast.error(err.response.data.detail);
+            // Navigate based on role
+            if (data.role === "admin") {
+                setTimeout(() => navigate("/admin", { replace: true }), 500);
             } else {
-                toast.error("Login failed. Please try again.");
+                setTimeout(() => navigate(from, { replace: true }), 500);
             }
 
-            setErrors({ general: err.response?.data?.detail || "Login failed" });
+        } catch (err) {
+            console.error("❌ Login error:", err);
 
+            // Handle specific error messages
+            if (err.response?.status === 401) {
+                setErrors({ general: "Invalid email or password" });
+                toast.error("Invalid email or password");
+            } else if (err.response?.data?.detail) {
+                setErrors({ general: err.response.data.detail });
+                toast.error(err.response.data.detail);
+            } else if (err.response?.data?.email) {
+                setErrors({ email: err.response.data.email[0] });
+            } else if (err.response?.data?.password) {
+                setErrors({ password: err.response.data.password[0] });
+            } else {
+                setErrors({ general: "Login failed. Please try again." });
+                toast.error("Login failed. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -74,8 +90,16 @@ export default function Login() {
                 Access your Animal Aid account
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {location.state?.from && (
+                <div className="mt-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                    <p className="text-sm text-blue-700 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        Please login to access this page
+                    </p>
+                </div>
+            )}
 
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 {/* Email */}
                 <div>
                     <label className="block text-gray-700 font-medium mb-1">Email</label>
@@ -90,6 +114,7 @@ export default function Login() {
                                 : "border-gray-300 focus:ring-blue-400"
                         }`}
                         placeholder="example@mail.com"
+                        disabled={loading}
                     />
                     {errors.email && (
                         <p className="text-red-500 text-sm flex items-center mt-1">
@@ -114,6 +139,7 @@ export default function Login() {
                                     : "border-gray-300 focus:ring-blue-400"
                             }`}
                             placeholder="••••••••"
+                            disabled={loading}
                         />
                         <button
                             type="button"
@@ -133,16 +159,19 @@ export default function Login() {
 
                 {/* General Error */}
                 {errors.general && (
-                    <p className="text-red-600 text-center font-medium">
-                        {errors.general}
-                    </p>
+                    <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded">
+                        <p className="text-red-700 text-sm flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            {errors.general}
+                        </p>
+                    </div>
                 )}
 
                 {/* Submit */}
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex justify-center items-center transition"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex justify-center items-center transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <>
@@ -156,7 +185,7 @@ export default function Login() {
             </form>
 
             <p className="mt-6 text-center text-sm text-gray-600">
-                Don’t have an account?{" "}
+                Don't have an account?{" "}
                 <NavLink to="/signup" className="text-blue-600 hover:underline font-medium">
                     Sign Up
                 </NavLink>

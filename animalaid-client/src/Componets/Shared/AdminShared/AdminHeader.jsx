@@ -1,8 +1,23 @@
 import { useState, memo } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Bell, User, Settings, Calendar, LogOut, Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Bell, User, LogOut, Menu } from 'lucide-react';
+import { clearAuth } from '../../../Authentication/auth.js';
+import toast from 'react-hot-toast';
 
 const AdminHeader = memo(({ searchTerm, handleSearchChange, toggleMobileMenu, toggleProfileMenu, showProfileMenu }) => {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // Clear authentication
+        clearAuth();
+        
+        // Show success message
+        toast.success('Logged out successfully');
+        
+        // Redirect to login
+        navigate('/login');
+    };
+
     return (
         <header className="bg-white border-gray-200 border-b shadow-sm sticky top-0 z-10">
             <div className="flex items-center justify-between px-4 py-3">
@@ -15,7 +30,7 @@ const AdminHeader = memo(({ searchTerm, handleSearchChange, toggleMobileMenu, to
                         <Menu size={20} />
                     </button>
                     <h1 className="text-xl font-semibold text-gray-800">
-                        Admin Pages
+                        Admin Panel
                     </h1>
                 </div>
 
@@ -59,23 +74,15 @@ const AdminHeader = memo(({ searchTerm, handleSearchChange, toggleMobileMenu, to
                                     <p className="text-sm font-medium text-gray-800">Admin User</p>
                                     <p className="text-xs text-gray-500">admin@animalaid.com</p>
                                 </div>
-                                <Link to="/admin/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <User size={16} className="mr-2" />
-                                    Your Profile
-                                </Link>
-                                <Link to="/admin/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <Settings size={16} className="mr-2" />
-                                    Settings
-                                </Link>
-                                <Link to="/admin/calendar" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <Calendar size={16} className="mr-2" />
-                                    Calendar
-                                </Link>
+                                
                                 <div className="border-t border-gray-200 mt-1 pt-1">
-                                    <Link to="/logout" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                    >
                                         <LogOut size={16} className="mr-2" />
                                         Sign out
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
                         )}

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, User, LogOut, Settings, Heart, ShoppingCart, ChevronDown, X, Bell, Package, Menu, Phone, Mail } from "lucide-react";
+import { Search, User, LogOut, Settings, ShoppingCart, ChevronDown, X, Package } from "lucide-react";
 import { useCart } from "../../../Context/CartContext";
+import { isAuthenticated } from "../../../Authentication/auth";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
@@ -12,7 +14,6 @@ const Navbar = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const userMenuRef = useRef(null);
   const searchRef = useRef(null);
@@ -21,7 +22,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { cartItems, getCount, removeFromCart } = useCart();
 
-  // Sample suggestions for search
   const sampleSuggestions = [
     { id: 1, name: "Antibiotics for Dogs", type: "medicine", category: "Medicine" },
     { id: 2, name: "Cattle Feed Premium", type: "feed", category: "Feed" },
@@ -30,11 +30,13 @@ const Navbar = () => {
     { id: 5, name: "Animal Thermometer", type: "equipment", category: "Equipment" }
   ];
 
-  // Fetch user data from API
+  // ✅ Fetch user data from backend
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem("access_token");
+
+      console.log("🔍 Token check:", token ? "Token exists" : "No token");
 
       if (!token) {
         setIsLoggedIn(false);
@@ -43,7 +45,7 @@ const Navbar = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/accounts/user/", {
+      const response = await fetch("http://127.0.0.1:8000/api/accounts/user/", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,17 +53,25 @@ const Navbar = () => {
         },
       });
 
+      console.log("🔍 Response status:", response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log("✅ User data received:", data);
+        
         const userData = data.user || data;
         setUserData(userData);
         setIsLoggedIn(true);
       } else {
-        localStorage.removeItem("accessToken");
+        console.log("❌ Invalid token, clearing auth");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user_role");
         setIsLoggedIn(false);
         setUserData(null);
       }
     } catch (error) {
+      console.error("❌ Error fetching user data:", error);
       setIsLoggedIn(false);
       setUserData(null);
     } finally {
@@ -69,28 +79,31 @@ const Navbar = () => {
     }
   };
 
+  // ✅ FIXED: Single useEffect with proper event handling
   useEffect(() => {
+    // Initial fetch
     fetchUserData();
 
     const handleLoginSuccess = () => {
-      fetchUserData();
+      console.log("✅ Login event detected!");
+      setTimeout(() => fetchUserData(), 100);
     };
 
+    const handleLogoutSuccess = () => {
+      console.log("✅ Logout event detected!");
+      setIsLoggedIn(false);
+      setUserData(null);
+    };
+
+    // Listen for login/logout events
     window.addEventListener('loginSuccess', handleLoginSuccess);
-
-    const handleStorageChange = (e) => {
-      if (e.key === 'accessToken') {
-        fetchUserData();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('logoutSuccess', handleLogoutSuccess);
 
     return () => {
       window.removeEventListener('loginSuccess', handleLoginSuccess);
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('logoutSuccess', handleLogoutSuccess);
     };
-  }, []);
+  }, []); // Empty dependency - runs once on mount
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -110,7 +123,7 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Search suggestions handler
+  // Search suggestions
   useEffect(() => {
     if (searchQuery.length > 1) {
       const filtered = sampleSuggestions.filter(item =>
@@ -132,21 +145,24 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("userRole");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_role");
+    
     setIsLoggedIn(false);
     setUserData(null);
     setShowUserMenu(false);
-    navigate('/');
+    
+    toast.success('Logged out successfully');
     window.dispatchEvent(new Event('logoutSuccess'));
+    
+    navigate('/');
   };
 
   const goToLogin = () => {
     navigate('/login');
   };
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (!userData) return "U";
     const firstName = userData.first_name || "";
@@ -155,25 +171,22 @@ const Navbar = () => {
     return initials || userData.email?.charAt(0).toUpperCase() || "U";
   };
 
-  // Get display name
   const getDisplayName = () => {
     if (!userData) return "User";
     return userData.first_name || userData.email?.split('@')[0] || "User";
   };
 
-  // Calculate cart total
   const getCartTotal = () => {
     return cartItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
   };
 
   return (
     <>
-      {/* Main Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
-            
-            {/* Logo Section */}
+
+            {/* Logo */}
             <div className="flex items-center gap-8">
               <Link to="/" className="flex items-center gap-3 group">
                 <div className="relative">
@@ -218,7 +231,6 @@ const Navbar = () => {
                   )}
                 </div>
 
-                {/* Search Suggestions Dropdown */}
                 {searchFocused && suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                     <div className="py-2">
@@ -256,32 +268,14 @@ const Navbar = () => {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
-              
+
               {/* Mobile Search */}
-              <button 
+              <button
                 onClick={() => setSearchFocused(true)}
                 className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
               >
                 <Search className="h-5 w-5 text-gray-700" />
               </button>
-
-              {/* Notifications */}
-              {/* {isLoggedIn && (
-                <button className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-                  <Bell className="h-5 w-5 text-gray-700" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-                </button>
-              )} */}
-
-              {/* Wishlist */}
-              {/* {isLoggedIn && (
-                <Link
-                  to="/wishlist"
-                  className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
-                >
-                  <Heart className="h-5 w-5 text-gray-700" />
-                </Link>
-              )} */}
 
               {/* Cart */}
               <div className="relative" ref={cartRef}>
@@ -297,7 +291,6 @@ const Navbar = () => {
                   )}
                 </button>
 
-                {/* Cart Dropdown */}
                 {showCartDropdown && (
                   <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                     <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
@@ -402,7 +395,6 @@ const Navbar = () => {
                       <ChevronDown className={`hidden md:block h-4 w-4 text-gray-500 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {/* User Dropdown */}
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                         <div className="p-6 bg-gradient-to-br from-blue-500 to-blue-700">
@@ -416,6 +408,7 @@ const Navbar = () => {
                                   ? `${userData.first_name} ${userData.last_name}`
                                   : getDisplayName()}
                               </p>
+                              <p className="text-xs text-white/80 truncate">{userData?.email}</p>
                             </div>
                           </div>
                         </div>
