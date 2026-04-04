@@ -29,11 +29,15 @@ const StockManagement = () => {
         }
     };
 
+
+
     const handleRefresh = async () => {
         setRefreshing(true);
         await fetchAnalytics();
         setRefreshing(false);
     };
+
+
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -58,6 +62,37 @@ const StockManagement = () => {
             </div>
         );
     }
+
+    const handleDownloadPDF = async () => {
+        try {
+            const params = new URLSearchParams({ period });
+            if (productType) params.append('product_type', productType);
+
+            const response = await fetch(`http://localhost:8000/api/stocks/download-pdf/?${params}`, {
+                method: 'GET',
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `AnimalAid_Stock_Report_${period}_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                toast.success('PDF downloaded successfully!');
+            } else {
+                toast.error('Failed to download PDF');
+            }
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            toast.error('Error downloading PDF');
+        }
+    };
+
+
 
     const { metrics, top_selling_products, recent_purchases, recent_sales, active_alerts } = analytics;
 
@@ -102,6 +137,14 @@ const StockManagement = () => {
                                 <option value="month">Last Month</option>
                                 <option value="year">Last Year</option>
                             </select>
+
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors"
+                            >
+                                <Download size={18} />
+                                Download PDF
+                            </button>
                             
                             <select
                                 value={productType}

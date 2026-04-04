@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell
+} from 'recharts';
 
-import { Users, Pill, Package, AlertTriangle, TrendingUp, Layers, Calendar, ShoppingCart, Activity, Truck, Thermometer,
-  ArrowUp, ArrowDown, Info, ExternalLink, ChevronRight } from 'lucide-react';
+import {
+  Users, Pill, Package, AlertTriangle, TrendingUp, Layers, Calendar, ShoppingCart, Activity, Truck, Thermometer,
+  ArrowUp, ArrowDown, Info, ExternalLink, ChevronRight
+} from 'lucide-react';
+import { use } from 'react';
 
 const DashboardAdmin = () => {
   // Demo data - would normally be fetched from API
@@ -13,8 +18,9 @@ const DashboardAdmin = () => {
     activeDiseases: 0,
     monthlyDemand: 0
   });
-  
+
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
   const [medicines, setMedicines] = useState([]);
   const [feeds, setFeeds] = useState([]);
   const [selectedTimeframe, setSelectedTimeframe] = useState('monthly');
@@ -32,36 +38,78 @@ const DashboardAdmin = () => {
     }, 1000);
   }, []);
 
+
+
   useEffect(() => {
-      const fetchMedicines = async () => {
-          try {
-              const response = await fetch('http://localhost:8000/medicines/');
-              if (!response.ok) {
-                  throw new Error('Failed to fetch medicines');
-              }
-              const data = await response.json();
-              setMedicines(data);
-          } catch (error) {
-              console.error('Error fetching medicines:', error);
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+          console.warn("No token found in localStorage");
+          return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/accounts/users/', {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
           }
-      };
-      fetchMedicines();
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          console.error("API error:", response.status, err);
+          return;
+        }
+
+        const data = await response.json();
+        setUsers(data);
+
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers(); // ← this line was missing before
   }, []);
 
-useEffect(() => {
-        const fetchFeeds = async () => {
-            try {
-                const response = await fetch('http://localhost:8000/feeds/');
-                if (!response.ok) throw new Error('Failed to fetch feeds');
-                const data = await response.json();
-                setFeeds(data);
-            } catch (error) {
-                console.error(error);
-                toast.error('Failed to fetch feeds');
-            }
-        };
-        fetchFeeds();
-    }, []);
+
+
+
+  useEffect(() => {
+    const fetchMedicines = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/medicines/');
+        if (!response.ok) {
+          throw new Error('Failed to fetch medicines');
+        }
+        const data = await response.json();
+        setMedicines(data);
+      } catch (error) {
+        console.error('Error fetching medicines:', error);
+      }
+    };
+    fetchMedicines();
+  }, []);
+
+  useEffect(() => {
+    const fetchFeeds = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/feeds/');
+        if (!response.ok) throw new Error('Failed to fetch feeds');
+        const data = await response.json();
+        setFeeds(data);
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to fetch feeds');
+      }
+    };
+    fetchFeeds();
+  }, []);
+
+  // console.log('Medicines:', medicines.length);
+  // console.log('Feeds:', feeds.length);
 
   // Demo data for charts
   const animalDistribution = [
@@ -149,7 +197,7 @@ useEffect(() => {
           <div className="flex justify-between items-center py-6">
             <h1 className="text-2xl font-bold text-gray-900">AnimalAid Dashboard</h1>
             <div className="flex items-center gap-4">
-              <select 
+              <select
                 className="bg-white border border-gray-300 rounded-md py-1 px-3 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedTimeframe}
                 onChange={(e) => setSelectedTimeframe(e.target.value)}
@@ -183,7 +231,7 @@ useEffect(() => {
               {loading ? (
                 <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">{0}</p>
+                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               )}
               {/* <div className="flex items-center mt-1">
                 <ArrowUp className="h-4 w-4 text-green-500" />
@@ -197,7 +245,7 @@ useEffect(() => {
               <Package className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Feed Stock (Bag)</p>
+              <p className="text-sm font-medium text-gray-500">Types of Feeds </p>
               {loading ? (
                 <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
               ) : (
@@ -215,7 +263,7 @@ useEffect(() => {
               <Pill className="h-6 w-6 text-red-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Medicines Stock</p>
+              <p className="text-sm font-medium text-gray-500">Types of Medicines </p>
               {loading ? (
                 <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
               ) : (
@@ -309,8 +357,8 @@ useEffect(() => {
                 <AreaChart data={monthlyDemandData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <defs>
                     <linearGradient id="colorDemand" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -356,7 +404,7 @@ useEffect(() => {
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
                     {animalDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -388,7 +436,7 @@ useEffect(() => {
                   let barColor = 'bg-green-500';
                   if (percentage < 120) barColor = 'bg-yellow-500';
                   if (percentage < 100) barColor = 'bg-red-500';
-                  
+
                   return (
                     <div key={item.name}>
                       <div className="flex justify-between items-center mb-1">
@@ -414,7 +462,7 @@ useEffect(() => {
               {alerts.map((alert) => {
                 let alertColor = 'border-gray-200 bg-gray-50';
                 let iconColor = 'text-gray-400';
-                
+
                 if (alert.type === 'warning') {
                   alertColor = 'border-yellow-200 bg-yellow-50';
                   iconColor = 'text-yellow-400';
@@ -428,7 +476,7 @@ useEffect(() => {
                   alertColor = 'border-blue-200 bg-blue-50';
                   iconColor = 'text-blue-400';
                 }
-                
+
                 return (
                   <div key={alert.id} className={`p-4 ${alertColor}`}>
                     <div className="flex">
@@ -551,7 +599,7 @@ useEffect(() => {
                       if (treatment.status === 'Scheduled') statusColor = 'bg-blue-100 text-blue-800';
                       else if (treatment.status === 'Preparing') statusColor = 'bg-yellow-100 text-yellow-800';
                       else if (treatment.status === 'Awaiting Supply') statusColor = 'bg-orange-100 text-orange-800';
-                      
+
                       return (
                         <tr key={treatment.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{treatment.animal}</td>

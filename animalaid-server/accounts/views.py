@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from .serializers import RegisterSerializer, UserSerializer
 from django.contrib.auth import authenticate
+from .models import User
 from django.conf import settings
+from .permissions import IsStaticAdmin
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -78,3 +80,14 @@ class UserDetailView(APIView):
             "isAuthenticated": True,
             "user": serializer.data
         }, status=status.HTTP_200_OK)
+        
+
+class UserListView(APIView):
+    authentication_classes = []        # ← ADD THIS LINE
+    permission_classes = [IsStaticAdmin]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
