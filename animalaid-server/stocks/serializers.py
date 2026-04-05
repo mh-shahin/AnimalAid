@@ -1,9 +1,12 @@
 from rest_framework import serializers
 from .models import StockPurchase, StockSale, StockAlert
 
+
 class StockPurchaseSerializer(serializers.ModelSerializer):
-    added_by_username = serializers.CharField(source='added_by.username', read_only=True)
-    
+    added_by_username = serializers.CharField(
+        source='added_by.username', read_only=True
+    )
+
     class Meta:
         model = StockPurchase
         fields = '__all__'
@@ -13,7 +16,7 @@ class StockPurchaseSerializer(serializers.ModelSerializer):
 class StockSaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockSale
-        fields = '__all__'
+        fields = '__all__'  # includes new customer_name, customer_group, customer_area
 
 
 class StockAlertSerializer(serializers.ModelSerializer):

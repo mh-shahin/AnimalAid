@@ -9,6 +9,8 @@ import {
   ArrowUp, ArrowDown, Info, ExternalLink, ChevronRight
 } from 'lucide-react';
 import { use } from 'react';
+import { Link } from 'react-router-dom';
+
 
 const DashboardAdmin = () => {
   // Demo data - would normally be fetched from API
@@ -196,7 +198,7 @@ const DashboardAdmin = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <h1 className="text-2xl font-bold text-gray-900">AnimalAid Dashboard</h1>
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <select
                 className="bg-white border border-gray-300 rounded-md py-1 px-3 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedTimeframe}
@@ -214,7 +216,7 @@ const DashboardAdmin = () => {
               <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
                 Generate Report
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </header>
@@ -233,48 +235,40 @@ const DashboardAdmin = () => {
               ) : (
                 <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               )}
-              {/* <div className="flex items-center mt-1">
-                <ArrowUp className="h-4 w-4 text-green-500" />
-                <span className="text-xs text-green-500 font-medium">+3.2% this month</span>
-              </div> */}
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6 flex items-center">
-            <div className="mr-4 bg-green-100 p-3 rounded-full">
-              <Package className="h-6 w-6 text-green-600" />
+          <Link to="/admin/adminfeed" className="bg-white rounded-lg shadow p-6 flex items-center">
+            <div className="bg-white rounded-lg shadow p-6 flex items-center  hover:bg-gray-200 transition-colors">
+              <div className="mr-4 bg-green-100 p-3 rounded-full">
+                <Package className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Types of Feeds </p>
+                {loading ? (
+                  <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">{feeds.length} </p>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Types of Feeds </p>
-              {loading ? (
-                <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
-              ) : (
-                <p className="text-2xl font-bold text-gray-900">{feeds.length} </p>
-              )}
-              {/* <div className="flex items-center mt-1">
-                <ArrowDown className="h-4 w-4 text-red-500" />
-                <span className="text-xs text-red-500 font-medium">-1.8% this month</span>
-              </div> */}
-            </div>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-lg shadow p-6 flex items-center">
-            <div className="mr-4 bg-red-100 p-3 rounded-full">
-              <Pill className="h-6 w-6 text-red-600" />
+          <Link to="/admin/adminmedicine" className="bg-white rounded-lg shadow p-6 flex items-center">
+            <div className="bg-white rounded-lg shadow p-4 flex items-center hover:bg-gray-200 transition-colors">
+              <div className="mr-4 bg-red-100 p-3 rounded-full">
+                <Pill className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Types of Medicines </p>
+                {loading ? (
+                  <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">{medicines.length}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Types of Medicines </p>
-              {loading ? (
-                <div className="h-6 bg-gray-200 animate-pulse rounded w-16"></div>
-              ) : (
-                <p className="text-2xl font-bold text-gray-900">{medicines.length}</p>
-              )}
-              {/* <div className="flex items-center mt-1">
-                <ArrowUp className="h-4 w-4 text-red-500" />
-                <span className="text-xs text-red-500 font-medium">+2 since last month</span>
-              </div> */}
-            </div>
-          </div>
+          </Link>
 
           <div className="bg-white rounded-lg shadow p-6 flex items-center">
             <div className="mr-4 bg-blue-100 p-3 rounded-full">
