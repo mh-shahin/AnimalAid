@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Search, User, LogOut, Settings, ShoppingCart, ChevronDown, X, Package } from "lucide-react";
 import { useCart } from "../../../Context/CartContext";
 import { isAuthenticated } from "../../../Authentication/auth";
+import profile from "../../Pages/userProfile/UserProfile";
 import toast from "react-hot-toast";
 
 const Navbar = () => {

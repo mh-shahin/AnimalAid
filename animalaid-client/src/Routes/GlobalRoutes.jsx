@@ -29,6 +29,7 @@ import UserBlogPage from "../Componets/Pages/blogsPage/UserBlogPage.jsx";
 import StockManagement from "../Componets/Admin/StockManagement.jsx";
 import ProtectedRoute from "../Componets/ProtectedRoute.jsx";
 import AdminRoute from "../Componets/AdminRoute.jsx";
+import UserProfile from "../Componets/Pages/userProfile/UserProfile.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -68,6 +69,10 @@ export const router = createBrowserRouter([
             {
                 path: "/feed",
                 element: <Feed />
+            },
+            {
+                path: "/profile",
+                element: <UserProfile></UserProfile>
             },
             {
                 path: "/blogs",
