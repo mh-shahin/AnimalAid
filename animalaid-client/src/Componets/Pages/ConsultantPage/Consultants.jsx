@@ -5,91 +5,86 @@ import { isAuthenticated } from '../../../Authentication/auth.js';
 import toast from 'react-hot-toast';
 
 const Consultants = () => {
+  // ✅ FIX: Load step and result from sessionStorage so they survive navigation
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState('');
   const [animalType, setAnimalType] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [step, setStep] = useState('upload');
+
+  const [step, setStep] = useState(() => {
+    return sessionStorage.getItem('consultStep') || 'upload';
+  });
+
+  const [result, setResult] = useState(() => {
+    const saved = sessionStorage.getItem('consultResult');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ FIXED: Restore form data after login with proper File conversion
+  // ✅ Restore form data after login redirect
   useEffect(() => {
     const savedData = sessionStorage.getItem('consultationData');
     if (savedData && isAuthenticated()) {
       try {
         const data = JSON.parse(savedData);
-        
-        // Restore text fields
+
         setDescription(data.description || '');
         setAnimalType(data.animalType || '');
-        
-        // Convert base64 back to File objects
+
         if (data.images && data.images.length > 0) {
           const restoredImages = data.images.map((base64, idx) => {
             try {
-              // Split the base64 string
               const arr = base64.split(',');
               const mime = arr[0].match(/:(.*?);/)[1];
               const bstr = atob(arr[1]);
               let n = bstr.length;
               const u8arr = new Uint8Array(n);
-              
               while (n--) {
                 u8arr[n] = bstr.charCodeAt(n);
               }
-              
               const blob = new Blob([u8arr], { type: mime });
               const file = new File([blob], `restored-image-${idx}.jpg`, { type: mime });
-              
-              return {
-                id: Date.now() + idx,
-                src: base64,
-                file: file
-              };
+              return { id: Date.now() + idx, src: base64, file };
             } catch (err) {
               console.error('Error converting base64 to file:', err);
               return null;
             }
-          }).filter(Boolean); // Remove null values
-          
+          }).filter(Boolean);
+
           setImages(restoredImages);
         }
-        
-        // Clear saved data
+
         sessionStorage.removeItem('consultationData');
-        
-        // Show success message
         toast.success('Form data restored! Please submit again.');
-        
       } catch (err) {
         console.error('Error restoring data:', err);
         sessionStorage.removeItem('consultationData');
       }
     }
-  }, []); // Only run once on mount
+  }, []);
 
   const handleImageUpload = (e) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    if (images.length >= 3) { 
-      setError("Maximum 3 images allowed"); 
+    if (images.length >= 3) {
+      setError("Maximum 3 images allowed");
       setTimeout(() => setError(''), 3000);
-      return; 
+      return;
     }
-    
+
     const file = e.target.files[0];
     const reader = new FileReader();
-    
+
     reader.onload = (ev) => {
-      setImages(prev => [...prev, { 
-        id: Date.now(), 
-        file: file, 
-        src: ev.target.result 
+      setImages(prev => [...prev, {
+        id: Date.now(),
+        file,
+        src: ev.target.result
       }]);
     };
-    
+
     reader.readAsDataURL(file);
   };
 
@@ -100,40 +95,35 @@ const Consultants = () => {
   const handleSubmit = async (e) => {
     e && e.preventDefault && e.preventDefault();
 
-    // ✅ Check authentication FIRST
     if (!isAuthenticated()) {
       toast.error('Please login to submit for analysis');
-      
-      // Save form data before redirecting
       sessionStorage.setItem('consultationData', JSON.stringify({
-        images: images.map(img => img.src), // base64 strings
+        images: images.map(img => img.src),
         description,
         animalType
       }));
-      
       navigate('/login', { state: { from: location.pathname } });
       return;
     }
 
-    // Validation
     if (images.length === 0) {
       setError("Please upload at least one image");
       setTimeout(() => setError(''), 3000);
       return;
     }
-    
+
     if (images.length > 3) {
       setError("Maximum 3 images allowed");
       setTimeout(() => setError(''), 3000);
       return;
     }
-    
+
     if (!animalType) {
       setError("Please select an animal type");
       setTimeout(() => setError(''), 3000);
       return;
     }
-    
+
     if (description.trim() === '') {
       setError("Please provide a description of the symptoms");
       setTimeout(() => setError(''), 3000);
@@ -141,32 +131,21 @@ const Consultants = () => {
     }
 
     setError(null);
+
+    // ✅ Save step to sessionStorage so it persists on back navigation
     setStep('analyzing');
+    sessionStorage.setItem('consultStep', 'analyzing');
     setIsAnalyzing(true);
 
     const formData = new FormData();
     formData.append('animal_type', animalType);
     formData.append('description', description);
 
-    // Append image files
     images.forEach((img, idx) => {
-      const file = img.file;
-      if (file) {
-        formData.append(`image${idx + 1}`, file);
+      if (img.file) {
+        formData.append(`image${idx + 1}`, img.file);
       }
     });
-
-    // Debug: Log FormData contents
-    console.log("📤 Submitting consultation:");
-    for (const pair of formData.entries()) {
-      const key = pair[0];
-      const value = pair[1];
-      if (value instanceof File) {
-        console.log(`  ${key}: File(${value.name}, ${value.size} bytes)`);
-      } else {
-        console.log(`  ${key}: ${value}`);
-      }
-    }
 
     try {
       const res = await fetch('http://127.0.0.1:8000/consultant/analyze/', {
@@ -179,20 +158,31 @@ const Consultants = () => {
       if (!res.ok) {
         const errMsg = data?.error || data?.detail || JSON.stringify(data);
         setError("Server error: " + errMsg);
+
+        // ✅ Reset step in sessionStorage on error
         setStep('upload');
+        sessionStorage.setItem('consultStep', 'upload');
         toast.error("Analysis failed: " + errMsg);
         return;
       }
-      
+
       const aiResult = data?.result || data;
+
+      // ✅ Save result AND step to sessionStorage so back navigation works
       setResult(aiResult);
+      sessionStorage.setItem('consultResult', JSON.stringify(aiResult));
+
       setStep('result');
+      sessionStorage.setItem('consultStep', 'result');
+
       toast.success('Analysis complete!');
-      
+
     } catch (err) {
       console.error("❌ Network error:", err);
       setError("Network error while contacting backend. Check server.");
+
       setStep('upload');
+      sessionStorage.setItem('consultStep', 'upload');
       toast.error("Network error. Please check your connection.");
     } finally {
       setIsAnalyzing(false);
@@ -205,8 +195,12 @@ const Consultants = () => {
     setAnimalType('');
     setResult(null);
     setError(null);
-    setStep('upload');
     setIsAnalyzing(false);
+
+    // ✅ Clear sessionStorage when user starts a new consultation
+    setStep('upload');
+    sessionStorage.removeItem('consultStep');
+    sessionStorage.removeItem('consultResult');
   };
 
   return (
@@ -218,6 +212,7 @@ const Consultants = () => {
       </div>
 
       <div className="container mx-auto p-4 max-w-3xl">
+
         {step === 'upload' && (
           <>
             {/* Animal Type Selection */}
@@ -230,11 +225,10 @@ const Consultants = () => {
                   <button
                     key={animal}
                     type="button"
-                    className={`p-3 rounded-lg text-center capitalize transition-all ${
-                      animalType === animal
+                    className={`p-3 rounded-lg text-center capitalize transition-all ${animalType === animal
                         ? 'bg-blue-100 border-2 border-blue-500 font-semibold'
                         : 'bg-white border border-gray-200 hover:border-blue-300'
-                    }`}
+                      }`}
                     onClick={() => setAnimalType(animal)}
                   >
                     {animal}
@@ -248,7 +242,6 @@ const Consultants = () => {
               <label className="block text-gray-700 font-medium mb-2">
                 Upload Images (Max 3) <span className="text-sm text-gray-500">- Show concerning areas clearly</span>
               </label>
-
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                 {images.map((image) => (
                   <div key={image.id} className="relative h-24 bg-gray-100 rounded-lg overflow-hidden">
@@ -309,7 +302,6 @@ const Consultants = () => {
               Submit for Analysis
             </button>
 
-            {/* Disclaimer */}
             <p className="mt-4 text-sm text-gray-500 text-center">
               This AI analysis is not a substitute for professional veterinary care.
               Please consult a veterinarian for proper diagnosis and treatment.
@@ -450,7 +442,6 @@ const Consultants = () => {
               </div>
             )}
 
-            {/* Disclaimer */}
             <p className="mt-6 text-sm text-gray-500 text-center">
               This AI analysis is not a substitute for professional veterinary care.
               Please consult a veterinarian for proper diagnosis and treatment.
