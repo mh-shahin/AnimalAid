@@ -437,7 +437,7 @@ const Navbar = () => {
                             <span className="font-semibold text-gray-700">My Orders</span>
                           </Link>
 
-                          <Link
+                          {/* <Link
                             to="/settings"
                             onClick={() => setShowUserMenu(false)}
                             className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors"
@@ -446,7 +446,7 @@ const Navbar = () => {
                               <Settings className="h-5 w-5 text-gray-600" />
                             </div>
                             <span className="font-semibold text-gray-700">Settings</span>
-                          </Link>
+                          </Link> */}
                         </div>
 
                         <div className="p-2 border-t">

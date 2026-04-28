@@ -115,7 +115,7 @@ const Cart = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 leading-tight">{item.name}</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Price: <span className="font-medium">৳{Number(item.price).toFixed(2)}</span>
+                    Price: <span className="font-medium">৳{Number(item.price).toFixed(2)}</span><span className="text-green-500">  (- {Number(((((item.discount) / 100) * (item.price))) * item.quantity).toFixed(2)})</span>
                   </p>
                 </div>
               </div>
@@ -156,7 +156,7 @@ const Cart = () => {
 
                 {/* Item Total */}
                 <p className="text-right font-semibold text-blue-600">
-                  ৳ {(Number(item.price) * (item.quantity || 1)).toFixed(2)}
+                  ৳ {(Number((item.price) * (item.quantity)) - ((((item.discount) / 100) * (item.price))) * (item.quantity || 1)).toFixed(2)}
                 </p>
 
                 {/* Remove */}
